@@ -495,46 +495,35 @@ setupRefInput('sceneRefInput','sceneRefArea','sceneRefData','sceneRefDesc');
 // ─── SYSTEM PROMPT ────────────────────────────────────────────────────────
 function buildSystemPrompt(projectContext){
   const p=PRESETS[STATE.selectedPreset];
-  return `You are an elite AI image prompt engineer for dark cinematic YouTube documentaries. Your prompts are used in professional video production.
+  return `You are an elite cinematic image prompt engineer for dark documentary YouTube videos. Style: Denis Villeneuve, Ridley Scott. Every frame = $200M film still.
 
-VISUAL LANGUAGE: Denis Villeneuve, Ridley Scott, Roger Deakins. Every frame must feel like a still from a $200M film. Oppressive atmosphere, layered depth, single purposeful light source, desaturated with one accent color, volumetric everything.
+STYLE: ${p.style}. Lighting: ${LIGHT_OPTS[STATE.lighting]}. Color: ${TEMP_OPTS[STATE.colorTemp]}. Lens: ${LENS_OPTS[STATE.lens]}. DOF: ${DOF_OPTS[STATE.dof]}. Particles: ${PARTICLES_OPTS[STATE.particles]}. Scale: ${SCALE_OPTS[STATE.scale]}.
+RULES: Deep shadows. Desaturated midtones. Layered atmosphere. Single light source. Overwhelming scale.
+${projectContext?'PROJECT: '+projectContext.substring(0,500):''}`.trim();
+}
 
-${projectContext?`PROJECT CONTEXT (use this to inform all visual choices):\n${projectContext}`:''}
-
-STYLE CONFIGURATION:
-- Preset: ${p.label} — ${p.description}
-- Visual style: ${p.style}
-- Lighting: ${LIGHT_OPTS[STATE.lighting]}
-- Color palette: ${TEMP_OPTS[STATE.colorTemp]}
-- Contrast: ${CONTRAST_OPTS[STATE.contrast]}
-- Lens: ${LENS_OPTS[STATE.lens]}
-- Depth of field: ${DOF_OPTS[STATE.dof]}
-- Atmosphere: ${PARTICLES_OPTS[STATE.particles]}
-- Scale: ${SCALE_OPTS[STATE.scale]}
-- Time/conditions: ${TIME_OPTS[STATE.timeOfDay]}
-${STATE.globalRefDesc?`- Global visual reference: ${STATE.globalRefDesc}`:''}
-${STATE.sceneRefDesc?`- Scene visual reference: ${STATE.sceneRefDesc}`:''}
-
-DARKNESS RULES (mandatory):
-- Shadows are DEEP — never lifted, never milky
-- Midtones are desaturated — color lives only in highlights or single accent
-- Atmosphere is LAYERED — foreground element, mid haze, background depth
-- Light has ONE source and ONE purpose
-- Scale must feel OVERWHELMING
-
-YOUR TASK:
-1. Read the script fragment
-2. Split into semantic scenes — each ~8-10 seconds (~25 spoken words)
-3. For each scene generate EXACTLY 4 camera angle variants
-
-THE 4 ANGLES:
-1. WIDE — subject tiny, environment dominates, epic scale
-2. MEDIUM — subject 40-60% of frame
-3. MACRO — extreme close-up of one texture or feature
-4. CREATIVE — bold unexpected angle: POV, reflection, silhouette, top-down, through-object
-
-OUTPUT — return ONLY valid JSON, zero markdown:
-{"scene_count":<n>,"scenes":[{"id":1,"subject":"<one line>","duration_hint":"<~Xs>","script_excerpt":"<exact words>","negative":"<comma-separated>","angles":[{"angle_id":"wide","label":"ШИРОКИЙ — Общий план","prompt":"<70-90 words English, rich detail>"},{"angle_id":"medium","label":"СРЕДНИЙ — Субъект","prompt":"<70-90 words>"},{"angle_id":"macro","label":"МАКРО — Детализация","prompt":"<70-90 words>"},{"angle_id":"creative","label":"ТВОРЧЕСКИЙ — Подпись","prompt":"<70-90 words>"}]}]}`;
+function safeParseJSON(raw){
+  // Clean markdown fences
+  let s=raw.replace(/\`\`\`json|\`\`\`/g,'').trim();
+  // Try direct parse first
+  try{ return JSON.parse(s); }catch(e){}
+  // Try to fix truncated JSON by finding last complete object
+  // Find last valid closing brace for the root object
+  let depth=0, lastValid=-1;
+  let inStr=false, esc=false;
+  for(let i=0;i<s.length;i++){
+    const c=s[i];
+    if(esc){esc=false;continue;}
+    if(c==='\\'){esc=true;continue;}
+    if(c==='"'&&!esc){inStr=!inStr;continue;}
+    if(inStr) continue;
+    if(c==='{'||c==='[') depth++;
+    if(c==='}'||c===']'){depth--;if(depth===0)lastValid=i;}
+  }
+  if(lastValid>0){
+    try{ return JSON.parse(s.substring(0,lastValid+1)); }catch(e){}
+  }
+  throw new Error('Не удалось распарсить JSON от Gemini');
 }
 
 // ─── GENERATE PROMPTS ─────────────────────────────────────────────────────
@@ -553,14 +542,19 @@ async function generatePrompts(){
 
   try{
     // Step 1: ask Gemini how many scenes and what each covers
-    const planPrompt=buildSystemPrompt(projectContext)+`\n\nFirst, split this script fragment into semantic scenes (each ~8-10 seconds, ~25 spoken words). Return ONLY valid JSON, no markdown:\n{"scene_count":<n>,"scenes":[{"id":1,"subject":"<one line>","duration_hint":"<~Xs>","script_excerpt":"<exact words from script>","negative":"<what to avoid>"}]}\n\nScript: "${script}"`;
+    const planPrompt=buildSystemPrompt(projectContext)+`
+
+Split this script into semantic scenes (~8-10 sec each, ~25 words). Return ONLY this JSON (no markdown):
+{"scene_count":N,"scenes":[{"id":1,"subject":"what is shown","duration_hint":"~8s","script_excerpt":"exact words","negative":"things to avoid"}]}
+
+Script: "${script}"`;
 
     const planUrl=`https://corsproxy.io/?url=${encodeURIComponent('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+STATE.apiKey)}`;
     const planRes=await fetch(planUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:planPrompt}]}],generationConfig:{temperature:0.5,maxOutputTokens:2000}})});
     if(!planRes.ok){const e=await planRes.json().catch(()=>({}));throw new Error(e?.error?.message||'Ошибка планирования сцен');}
     const planData=await planRes.json();
     const planRaw=planData.candidates?.[0]?.content?.parts?.[0]?.text||'';
-    const plan=JSON.parse(planRaw.replace(/```json|```/g,'').trim());
+    const plan=safeParseJSON(planRaw);
 
     // Step 2: generate 4 angles per scene one by one
     const fullResult={scene_count:plan.scene_count,scenes:[]};
@@ -570,13 +564,24 @@ async function generatePrompts(){
       const scene=plan.scenes[i];
       document.getElementById('genLoad').querySelector('.load-txt').textContent=`Генерирую сцену ${i+1} из ${plan.scene_count}...`;
 
-      const anglePrompt=buildSystemPrompt(projectContext)+`\n\nGenerate EXACTLY 4 camera angle prompts for this scene:\nSubject: ${scene.subject}\nScript excerpt: "${scene.script_excerpt}"\n\nReturn ONLY valid JSON, no markdown:\n{"angles":[{"angle_id":"wide","label":"ШИРОКИЙ — Общий план","prompt":"<70-90 words cinematic English>"},{"angle_id":"medium","label":"СРЕДНИЙ — Субъект","prompt":"<70-90 words>"},{"angle_id":"macro","label":"МАКРО — Детализация","prompt":"<70-90 words>"},{"angle_id":"creative","label":"ТВОРЧЕСКИЙ — Подпись","prompt":"<70-90 words, bold unexpected angle>"}]}`;
+      const anglePrompt=buildSystemPrompt(projectContext)+`
+
+Scene: ${scene.subject}
+Script: "${scene.script_excerpt}"
+
+Return ONLY this JSON (no markdown, no explanation):
+{"angles":[
+{"angle_id":"wide","label":"ШИРОКИЙ — Общий план","prompt":"WRITE 70-90 WORD CINEMATIC ENGLISH PROMPT HERE"},
+{"angle_id":"medium","label":"СРЕДНИЙ — Субъект","prompt":"WRITE 70-90 WORD CINEMATIC ENGLISH PROMPT HERE"},
+{"angle_id":"macro","label":"МАКРО — Детализация","prompt":"WRITE 70-90 WORD CINEMATIC ENGLISH PROMPT HERE"},
+{"angle_id":"creative","label":"ТВОРЧЕСКИЙ — Подпись","prompt":"WRITE 70-90 WORD BOLD UNEXPECTED ANGLE PROMPT HERE"}
+]}`;
 
       const angRes=await fetch(planUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:anglePrompt}]}],generationConfig:{temperature:0.8,maxOutputTokens:3000}})});
       if(!angRes.ok){const e=await angRes.json().catch(()=>({}));throw new Error(e?.error?.message||`Ошибка сцены ${i+1}`);}
       const angData=await angRes.json();
       const angRaw=angData.candidates?.[0]?.content?.parts?.[0]?.text||'';
-      const angles=JSON.parse(angRaw.replace(/```json|```/g,'').trim());
+      const angles=safeParseJSON(angRaw);
 
       fullResult.scenes.push({...scene,...angles});
     }
