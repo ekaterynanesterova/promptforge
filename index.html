@@ -554,7 +554,9 @@ Script: "${script}"`;
     if(!planRes.ok){const e=await planRes.json().catch(()=>({}));throw new Error(e?.error?.message||'Ошибка планирования сцен');}
     const planData=await planRes.json();
     const planRaw=planData.candidates?.[0]?.content?.parts?.[0]?.text||'';
-    const plan=safeParseJSON(planRaw);
+    let plan;
+    try{ plan=safeParseJSON(planRaw); }
+    catch(e){ throw new Error('План сцен: '+e.message+' | Ответ Gemini: '+planRaw.substring(0,300)); }
 
     // Step 2: generate 4 angles per scene one by one
     const fullResult={scene_count:plan.scene_count,scenes:[]};
@@ -581,7 +583,9 @@ Return ONLY this JSON (no markdown, no explanation):
       if(!angRes.ok){const e=await angRes.json().catch(()=>({}));throw new Error(e?.error?.message||`Ошибка сцены ${i+1}`);}
       const angData=await angRes.json();
       const angRaw=angData.candidates?.[0]?.content?.parts?.[0]?.text||'';
-      const angles=safeParseJSON(angRaw);
+      let angles;
+      try{ angles=safeParseJSON(angRaw); }
+      catch(e){ throw new Error('Углы сцены '+(i+1)+': '+e.message+' | Ответ: '+angRaw.substring(0,300)); }
 
       fullResult.scenes.push({...scene,...angles});
     }
