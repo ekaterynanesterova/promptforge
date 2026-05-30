@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PromptForge</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:linear-gradient(160deg,#010610 0%,#030d1e 55%,#020a18 100%);font-family:'Courier New',monospace;color:#8ab0d0;overflow-x:hidden}
+::-webkit-scrollbar{width:4px;background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(70,130,255,0.2);border-radius:2px}
+button{cursor:pointer;font-family:'Courier New',monospace;transition:opacity 0.2s}
+button:hover{opacity:0.75}
+textarea,input,select{font-family:'Courier New',monospace;background:rgba(3,8,22,0.8);border:1px solid rgba(60,120,255,0.12);border-radius:2px;color:#8ab0d0;outline:none}
+textarea:focus,input:focus,select:focus{border-color:rgba(70,130,255,0.35)}
+@keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.35}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes twinkle{0%,100%{opacity:var(--op)}50%{opacity:calc(var(--op)*0.15)}}
+
+canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+#app{position:relative;z-index:1;max-width:820px;margin:0 auto;padding:0 16px 80px}
+
+/* HEADER */
+.header{text-align:center;padding:36px 0 18px}
+.orb{width:80px;height:80px;border-radius:50%;margin:0 auto 14px;background:radial-gradient(circle,rgba(70,130,255,0.16) 0%,rgba(40,80,180,0.06) 55%,transparent 75%);box-shadow:0 0 45px rgba(60,120,255,0.15);border:1px solid rgba(60,120,255,0.12)}
+.title{font-size:30px;font-weight:700;letter-spacing:8px;color:#b8ccec;text-shadow:0 0 22px rgba(80,140,255,0.22)}
+.title span{color:#4a9eff;text-shadow:0 0 16px rgba(74,158,255,0.5)}
+.subtitle{color:rgba(130,160,200,0.35);font-size:9px;letter-spacing:2px;margin-top:7px;text-transform:uppercase}
+
+/* API BAR */
+.api-bar{display:flex;justify-content:space-between;align-items:center;background:rgba(60,120,255,0.04);border:1px solid rgba(60,120,255,0.1);border-radius:2px;padding:10px 16px;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+.api-left{display:flex;align-items:center;gap:8px}
+.api-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,100,80,0.6);flex-shrink:0;transition:background 0.3s}
+.api-dot.connected{background:#4aff90}
+.api-status{font-size:10px;color:rgba(140,180,220,0.55);letter-spacing:1px}
+.api-right{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.api-input{width:200px;font-size:11px;padding:6px 10px}
+.api-toggle{background:transparent;border:none;font-size:13px;padding:0 2px}
+.api-save-btn{background:rgba(74,158,255,0.12);border:1px solid rgba(74,158,255,0.25);color:#4a9eff;font-size:9px;letter-spacing:2px;padding:6px 14px;border-radius:2px}
+.api-masked{font-size:10px;color:rgba(140,180,220,0.4);letter-spacing:2px}
+.api-change-btn{background:transparent;border:1px solid rgba(60,120,255,0.15);color:rgba(90,150,255,0.4);font-size:9px;letter-spacing:1px;padding:5px 10px;border-radius:2px}
+
+/* TABS */
+.tabs{display:flex;gap:2px;margin-bottom:20px;border-bottom:1px solid rgba(60,120,255,0.1)}
+.tab-btn{background:transparent;border:none;border-bottom:2px solid transparent;color:rgba(100,150,220,0.35);font-size:10px;letter-spacing:3px;padding:10px 20px;transition:all 0.2s;position:relative;bottom:-1px}
+.tab-btn.active{color:#4a9eff;border-bottom-color:#4a9eff}
+.tab-badge{margin-left:6px;background:rgba(74,158,255,0.15);color:#4a9eff;font-size:9px;padding:1px 6px;border-radius:8px}
+.tab-content{display:none;animation:fadeUp 0.3s ease}
+.tab-content.active{display:block}
+
+/* SECTIONS */
+.section{margin-bottom:18px}
+.sec-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.sec-title{font-size:9px;letter-spacing:3px;color:rgba(90,150,255,0.5);text-transform:uppercase}
+.sec-hint{font-size:9px;color:rgba(90,150,255,0.3);letter-spacing:1px}
+
+/* INPUTS */
+textarea{width:100%;resize:vertical;line-height:1.75;padding:13px 15px;font-family:'Georgia',serif;font-size:12.5px;transition:border-color 0.2s}
+.ta-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.dim{font-size:9px;color:rgba(90,150,255,0.3);letter-spacing:1px}
+.clear-btn{background:transparent;border:none;color:rgba(255,100,80,0.4);font-size:9px;letter-spacing:1px}
+
+/* REF */
+.drop-zone{border:1px dashed rgba(60,120,255,0.2);border-radius:2px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;background:rgba(60,120,255,0.02)}
+.drop-icon{font-size:20px;color:rgba(74,158,255,0.3)}
+.drop-text{font-size:11px;color:rgba(90,150,255,0.45);letter-spacing:1px}
+.drop-hint{font-size:9px;color:rgba(90,150,255,0.25);letter-spacing:1px}
+.ref-preview{display:flex;gap:14px;align-items:flex-start}
+.ref-img{width:100px;height:70px;object-fit:cover;border-radius:2px;border:1px solid rgba(60,120,255,0.15);flex-shrink:0}
+.ref-info{flex:1;display:flex;flex-direction:column;gap:8px}
+
+/* PRESETS */
+.preset-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.preset-btn{background:rgba(5,12,30,0.8);border:1px solid rgba(60,120,255,0.1);border-radius:2px;padding:12px;text-align:left;display:flex;flex-direction:column;gap:5px;transition:all 0.2s}
+.preset-btn.active{border-color:rgba(74,158,255,0.4);background:rgba(74,158,255,0.06)}
+.preset-label{font-size:11px;color:#a0c0e0;display:block}
+.preset-desc{font-size:9px;color:rgba(90,150,255,0.35);line-height:1.4;display:block}
+
+/* PARAMS */
+.param-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.param{display:flex;flex-direction:column;gap:5px}
+.param-label{font-size:9px;letter-spacing:2px;color:rgba(90,150,255,0.4)}
+select{font-size:11px;padding:7px 10px;width:100%}
+
+/* BUTTONS */
+.main-btn{width:100%;background:linear-gradient(135deg,#142e66 0%,#0a1a3e 100%);border:1px solid rgba(70,130,255,0.3);color:#5090e0;font-size:11px;letter-spacing:4px;padding:14px;border-radius:2px;margin-bottom:20px}
+.main-btn:disabled{opacity:0.4;cursor:not-allowed}
+.ghost-btn{background:transparent;border:1px solid rgba(60,120,255,0.18);color:rgba(90,150,255,0.5);font-size:9px;letter-spacing:2px;padding:6px 13px;border-radius:2px}
+
+/* SUMMARY BAR */
+.summary-bar{display:flex;gap:16px;align-items:center;background:rgba(60,120,255,0.04);border:1px solid rgba(60,120,255,0.1);border-radius:2px;padding:10px 16px;margin-bottom:18px;flex-wrap:wrap}
+.summary-item{display:flex;flex-direction:column;gap:2px}
+.summary-key{font-size:8px;letter-spacing:2px;color:rgba(90,150,255,0.35)}
+.summary-val{font-size:10px;color:rgba(140,180,230,0.6);letter-spacing:1px}
+.summary-val.ok{color:#4aff90}
+.summary-val.warn{color:rgba(255,120,80,0.7)}
+.summary-edit{margin-left:auto;background:transparent;border:1px solid rgba(60,120,255,0.15);color:rgba(90,150,255,0.4);font-size:9px;letter-spacing:2px;padding:5px 12px;border-radius:2px}
+
+/* ERROR / LOADING */
+.error-box{background:rgba(255,40,40,0.06);border:1px solid rgba(255,40,40,0.15);color:rgba(255,100,100,0.7);padding:11px 16px;border-radius:2px;font-size:11px;margin-bottom:16px}
+.load-wrap{text-align:center;padding:16px 0}
+.load-bar{height:1px;background:rgba(60,120,255,0.07);overflow:hidden;margin-bottom:10px;border-radius:1px}
+.load-fill{height:100%;width:50%;background:linear-gradient(90deg,transparent,#4a9eff,transparent);animation:slide 1.6s ease-in-out infinite}
+.load-txt{color:rgba(90,150,255,0.4);font-size:9px;letter-spacing:3px}
+
+/* RESULTS */
+.res-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.res-label{font-size:9px;letter-spacing:3px;color:rgba(90,150,255,0.4)}
+
+/* SCENE CARDS */
+.scene-card{border:1px solid rgba(60,120,255,0.1);border-radius:2px;overflow:hidden;margin-bottom:10px}
+.scene-head{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;background:rgba(60,120,255,0.03);cursor:pointer;user-select:none}
+.scene-l{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.scene-r{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.scene-circle{width:32px;height:32px;border-radius:50%;border:1px solid rgba(60,120,255,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.scene-n{font-size:9px;color:#4a9eff;letter-spacing:1px}
+.scene-subj{color:#a8c0e0;font-size:12px;font-family:'Georgia',serif;margin-bottom:4px}
+.scene-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tag{font-size:8px;letter-spacing:2px;color:rgba(90,150,255,0.35);text-transform:uppercase}
+.tag-italic{font-style:italic;color:rgba(180,160,110,0.45)}
+.chev{color:rgba(90,150,255,0.3);font-size:9px}
+
+/* ANGLES */
+.angles-wrap{border-top:1px solid rgba(60,120,255,0.06);display:none}
+.angles-wrap.open{display:block}
+.angle-card{padding:13px 16px;border-bottom:1px solid rgba(60,120,255,0.04)}
+.angle-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;gap:8px}
+.angle-label{font-size:8px;letter-spacing:3px;text-transform:uppercase}
+.angle-btns{display:flex;gap:6px;flex-shrink:0}
+.angle-prompt{color:#8ab0d0;font-size:12px;line-height:1.85;font-family:'Georgia',serif}
+.mini-btn{background:rgba(60,120,255,0.07);border:1px solid rgba(60,120,255,0.14);color:rgba(90,150,255,0.5);font-size:8px;letter-spacing:1px;padding:4px 10px;border-radius:2px;white-space:nowrap}
+.mini-btn.done{color:rgba(60,200,100,0.8);border-color:rgba(60,200,100,0.2)}
+.mini-btn.gen{background:rgba(74,158,255,0.1);border-color:rgba(74,158,255,0.25);color:rgba(100,170,255,0.8)}
+.mini-btn.spinning span{display:inline-block;animation:spin 1s linear infinite}
+
+/* GENERATED IMAGE */
+.img-wrap{margin-top:12px;border-radius:2px;overflow:hidden;border:1px solid rgba(60,120,255,0.12)}
+.img-result{width:100%;display:block;max-height:400px;object-fit:contain;background:rgba(2,6,18,0.8)}
+.img-actions{display:flex;gap:8px;padding:8px 10px;background:rgba(0,0,0,0.3)}
+.img-dl-btn{background:rgba(74,158,255,0.1);border:1px solid rgba(74,158,255,0.2);color:rgba(100,170,255,0.7);font-size:9px;letter-spacing:2px;padding:5px 14px;border-radius:2px}
+.img-regen-btn{background:transparent;border:1px solid rgba(60,120,255,0.15);color:rgba(90,150,255,0.4);font-size:9px;letter-spacing:1px;padding:5px 12px;border-radius:2px}
+.img-err{margin-top:8px;font-size:10px;color:rgba(255,100,80,0.7);background:rgba(255,50,30,0.06);border:1px solid rgba(255,50,30,0.12);padding:6px 10px;border-radius:2px}
+
+/* NEGATIVE ROW */
+.neg-row{display:flex;gap:12px;align-items:flex-start;padding:11px 16px;background:rgba(0,0,0,0.2)}
+.neg-label{font-size:8px;letter-spacing:2px;color:rgba(255,100,70,0.3);flex-shrink:0;margin-top:1px}
+.neg-txt{color:rgba(160,120,100,0.5);font-size:10px;line-height:1.6;flex:1}
+
+/* HISTORY */
+.empty{text-align:center;color:rgba(90,150,255,0.25);font-size:11px;letter-spacing:2px;padding:60px 0}
+
+/* MOBILE */
+@media(max-width:600px){
+  .preset-grid{grid-template-columns:1fr 1fr}
+  .param-grid{grid-template-columns:1fr}
+  .api-input{width:150px}
+  .summary-bar{gap:10px}
+}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div id="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="orb"></div>
+    <h1 class="title">PROMPT<span>FORGE</span></h1>
+    <p class="subtitle">Кинематографичный генератор · 4 ракурса · Генерация картинок · Nano Banana 2</p>
+  </div>
+
+  <!-- API KEY BAR -->
+  <div class="api-bar">
+    <div class="api-left">
+      <div class="api-dot" id="apiDot"></div>
+      <span class="api-status" id="apiStatus">Gemini API не настроен</span>
+    </div>
+    <div class="api-right" id="apiRight">
+      <input type="password" class="api-input" id="apiKeyInput" placeholder="Вставь Gemini API ключ...">
+      <button class="api-toggle" id="apiToggle">👁</button>
+      <button class="api-save-btn" id="apiSaveBtn">Сохранить</button>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="project">ПРОЕКТ</button>
+    <button class="tab-btn" data-tab="generate">ГЕНЕРАЦИЯ</button>
+    <button class="tab-btn" data-tab="history">ИСТОРИЯ <span class="tab-badge" id="histBadge" style="display:none">0</span></button>
+  </div>
+
+  <!-- TAB: PROJECT -->
+  <div class="tab-content active" id="tab-project">
+
+    <div class="section">
+      <div class="sec-head">
+        <span class="sec-title">ПОЛНЫЙ ТЕКСТ СЦЕНАРИЯ</span>
+        <span class="sec-hint">Claude читает весь текст — знает контекст при генерации каждой сцены</span>
+      </div>
+      <textarea id="projectText" rows="9" placeholder="Вставь полный текст сценария. Чем больше контекста — тем точнее промты..."></textarea>
+      <div class="ta-footer">
+        <span class="dim" id="projectWordCount">0 слов</span>
+        <button class="clear-btn" onclick="document.getElementById('projectText').value='';updateWordCount()">Очистить</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-head">
+        <span class="sec-title">ГЛОБАЛЬНЫЙ РЕФЕРЕНС</span>
+        <span class="sec-hint">Задаёт визуальный стиль всего проекта</span>
+      </div>
+      <div id="globalRefArea">
+        <div class="drop-zone" onclick="document.getElementById('globalRefInput').click()">
+          <span class="drop-icon">⊕</span>
+          <span class="drop-text">Загрузить референс-изображение</span>
+          <span class="drop-hint">JPG, PNG, WEBP</span>
+        </div>
+      </div>
+      <input type="file" id="globalRefInput" accept="image/*" style="display:none">
+    </div>
+
+    <div class="section">
+      <div class="sec-head"><span class="sec-title">ПРЕСЕТ СТИЛЯ</span></div>
+      <div class="preset-grid" id="presetGrid"></div>
+    </div>
+
+    <div class="section">
+      <div class="sec-head"><span class="sec-title">ПАРАМЕТРЫ СТИЛЯ</span></div>
+      <div class="param-grid" id="paramGrid"></div>
+    </div>
+
+    <button class="main-btn" onclick="switchTab('generate')">ПЕРЕЙТИ К ГЕНЕРАЦИИ →</button>
+  </div>
+
+  <!-- TAB: GENERATE -->
+  <div class="tab-content" id="tab-generate">
+    <div class="summary-bar">
+      <div class="summary-item">
+        <span class="summary-key">ПРЕСЕТ</span>
+        <span class="summary-val" id="sumPreset">—</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-key">СЦЕНАРИЙ</span>
+        <span class="summary-val" id="sumScript">не загружен</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-key">КАРТИНКИ</span>
+        <span class="summary-val" id="sumApi">нет ключа</span>
+      </div>
+      <button class="summary-edit" onclick="switchTab('project')">Изменить</button>
+    </div>
+
+    <div class="section">
+      <div class="sec-head">
+        <span class="sec-title">ФРАГМЕНТ СКРИПТА</span>
+        <span class="sec-hint" id="scriptHint">0 слов</span>
+      </div>
+      <textarea id="scriptText" rows="6" placeholder="Вставь фрагмент текста для этой части видео..."></textarea>
+    </div>
+
+    <div class="section">
+      <div class="sec-head">
+        <span class="sec-title">РЕФЕРЕНС ДЛЯ СЦЕНЫ</span>
+        <span class="sec-hint">Опционально — влияет только на эту генерацию</span>
+      </div>
+      <div id="sceneRefArea">
+        <div class="drop-zone" style="padding:14px 20px" onclick="document.getElementById('sceneRefInput').click()">
+          <span class="drop-icon">⊕</span>
+          <span class="drop-text">Референс для этой сцены</span>
+        </div>
+      </div>
+      <input type="file" id="sceneRefInput" accept="image/*" style="display:none">
+    </div>
+
+    <button class="main-btn" id="generateBtn" onclick="generatePrompts()">ГЕНЕРИРОВАТЬ ПРОМТЫ</button>
+    <div class="error-box" id="genError" style="display:none"></div>
+    <div class="load-wrap" id="genLoad" style="display:none">
+      <div class="load-bar"><div class="load-fill"></div></div>
+      <p class="load-txt">Анализирую сцены · Применяю стиль · Строю 4 ракурса...</p>
+    </div>
+
+    <div id="results"></div>
+  </div>
+
+  <!-- TAB: HISTORY -->
+  <div class="tab-content" id="tab-history">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+      <button class="ghost-btn" onclick="clearHistory()">Очистить историю</button>
+    </div>
+    <div id="historyList"><div class="empty">История пуста — сгенерируй первые промты</div></div>
+  </div>
+
+</div>
+
+<script>
+// ─── STATE ────────────────────────────────────────────────────────────────
+const STATE = {
+  apiKey: '', apiKeySaved: false, showKey: false,
+  selectedPreset: 'dark_cosmic',
+  lens: 0, dof: 0, lighting: 0, timeOfDay: 0, colorTemp: 0, contrast: 0, particles: 0, scale: 3,
+  globalRefData: null, globalRefDesc: '', sceneRefData: null, sceneRefDesc: '',
+  results: null, history: [], expanded: null,
+  generatingImg: {}, generatedImgs: {}, imgErrors: {}
+};
+
+// ─── PRESETS ──────────────────────────────────────────────────────────────
+const PRESETS = {
+  dark_cosmic:{label:"🌑 Тёмный Космос",description:"Глубокий космос, холодные синие тени, звёздная пыль, бесконечная пустота",style:"deep space cinematic, cold steel-blue shadows, volumetric stellar dust, oppressive void atmosphere",lighting:"single distant star as harsh key light, cold rim lighting, deep shadow fill",color:"desaturated blue-black palette, steel and slate tones, occasional amber nebula accent",atmosphere:"cosmic dust particles, infinite depth, vacuum silence",negative:"warm tones, sunlight, cheerful, colorful, cartoonish, flat lighting"},
+  prehistoric:{label:"🦕 Доисторический",description:"Первобытные джунгли, янтарный свет, влажный туман, древняя земля",style:"prehistoric cinematic, oppressive jungle canopy, bioluminescent undergrowth, Jurassic atmosphere",lighting:"filtered amber sunlight through dense foliage, god rays, deep shadow pools",color:"deep greens and ochres, amber highlights, shadow-heavy contrast",atmosphere:"thick humid fog, spore clouds, insect swarms, ancient silence",negative:"modern elements, clean sky, bright colors, cartoonish creatures"},
+  deep_ocean:{label:"🌊 Глубокий Океан",description:"Абиссальная тьма, биолюминесценция, давление глубин, чужеродная жизнь",style:"abyssal ocean cinematic, crushing depth, bioluminescent organisms, alien underwater world",lighting:"bioluminescent point sources, absolute darkness fill, cold teal glow",color:"near-black with teal and violet bioluminescent accents, zero ambient light",atmosphere:"floating particles, murky water column, pressure distortion, eerie silence",negative:"sunlight, surface light, warm colors, clear water, bright environment"},
+  apocalyptic:{label:"☄️ Апокалипсис",description:"Пепельное небо, багровый свет, разрушение, конец миров",style:"post-apocalyptic cinematic, ash-choked atmosphere, crimson sky, massive destruction scale",lighting:"diffused crimson light through ash clouds, no direct sun, ember glow",color:"desaturated grays and ash tones, deep crimson and orange accents",atmosphere:"falling ash, ember particles, thick smoke columns, oppressive heat haze",negative:"blue sky, clean air, green vegetation, hopeful imagery, bright light"},
+  ancient_earth:{label:"🌿 Древняя Земля",description:"Докембрий, вулканы, первобытные океаны, зарождение жизни",style:"primordial earth cinematic, volcanic landscape, toxic atmosphere, dawn of life aesthetic",lighting:"volcanic orange glow, lightning from storm clouds, no sun visible",color:"rust reds and sulfur yellows, deep blacks, toxic green water tones",atmosphere:"volcanic ash, toxic gas clouds, lightning storms, lava flows",negative:"modern sky, recognizable animals, clear water, clean environment"},
+  horror_void:{label:"👁️ Ужас Пустоты",description:"Экзистенциальный страх, паразитирующий свет, сюрреализм, неизведанное",style:"cosmic horror cinematic, surrealist dread, impossible geometry, existential void",lighting:"single sickly light source from wrong direction, deep unnatural shadows",color:"near-monochrome with sickly green or purple contamination, deep blacks",atmosphere:"visual noise, distortion at edges, wrongness, uncanny silence",negative:"natural lighting, cheerful, colorful, safe, recognizable normal objects"}
+};
+
+const LENS_OPTS=["Анаморфный (кинематографичный широкий)","Макро (экстремальная детализация)","Телефото (сжатая глубина)","Рыбий глаз (искажённый эпик)","Стандартный 35мм"];
+const DOF_OPTS=["Мелкий (размытый фон)","Глубокий (всё в фокусе)","Рэк-фокус (два плана)"];
+const LIGHT_OPTS=["Один жёсткий источник (Ридли Скотт)","Рассеянный туманный (мягкая тайна)","Биолюминесцентный (самосвечение)","Огонь / лава","Звёздное / космическое свечение","Грозовые молнии"];
+const TIME_OPTS=["Ночь / полная тьма","Затмение / ложные сумерки","Шторм / без прямого солнца","Закат / последний свет","Глубокое подземелье","Вне времени (пустота)"];
+const TEMP_OPTS=["Ледяной холод (стальной синий)","Нейтральный (шиферно-серый)","Вулканический (янтарный/красный)","Токсичный (болезненно-зелёный)","Пустота (почти монохром)"];
+const CONTRAST_OPTS=["Экстремальный (Вильнёв)","Высокий кинематографичный (Скотт)","Мягкий туманный (низкий контраст)"];
+const PARTICLES_OPTS=["Космическая пыль / туманность","Пепел и угли","Влажный туман / споры","Дождь / вода","Плавающий мусор","Без частиц"];
+const SCALE_OPTS=["Макро (миллиметры)","Человеческий масштаб","Архитектурный","Планетарный","Космический / бесконечный"];
+
+const PARAMS=[
+  {label:"Линза",key:"lens",opts:LENS_OPTS},
+  {label:"Глубина резкости",key:"dof",opts:DOF_OPTS},
+  {label:"Источник света",key:"lighting",opts:LIGHT_OPTS},
+  {label:"Условия / время",key:"timeOfDay",opts:TIME_OPTS},
+  {label:"Цветовая температура",key:"colorTemp",opts:TEMP_OPTS},
+  {label:"Контраст",key:"contrast",opts:CONTRAST_OPTS},
+  {label:"Частицы / атмосфера",key:"particles",opts:PARTICLES_OPTS},
+  {label:"Масштаб",key:"scale",opts:SCALE_OPTS}
+];
+
+const ANGLE_COLORS={
+  wide:{color:"rgba(74,158,255,0.5)",bg:"rgba(74,158,255,0.04)",border:"rgba(74,158,255,0.18)"},
+  medium:{color:"rgba(160,106,255,0.5)",bg:"rgba(160,106,255,0.04)",border:"rgba(160,106,255,0.18)"},
+  macro:{color:"rgba(255,154,74,0.5)",bg:"rgba(255,154,74,0.04)",border:"rgba(255,154,74,0.18)"},
+  creative:{color:"rgba(74,255,196,0.5)",bg:"rgba(74,255,196,0.04)",border:"rgba(74,255,196,0.18)"}
+};
+
+// ─── STARS ────────────────────────────────────────────────────────────────
+(function(){
+  const c=document.getElementById('stars'),ctx=c.getContext('2d');
+  const stars=Array.from({length:90},()=>({x:Math.random(),y:Math.random(),r:Math.random()*1.2+0.3,op:Math.random()*0.5+0.1,speed:Math.random()*0.02+0.01,t:Math.random()*Math.PI*2}));
+  function resize(){c.width=window.innerWidth;c.height=window.innerHeight}
+  resize(); window.addEventListener('resize',resize);
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    const now=Date.now()/1000;
+    stars.forEach(s=>{
+      const op=s.op*(0.3+0.7*Math.abs(Math.sin(now*s.speed+s.t)));
+      ctx.beginPath();ctx.arc(s.x*c.width,s.y*c.height,s.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,255,255,${op})`;ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ─── INIT UI ──────────────────────────────────────────────────────────────
+function initPresets(){
+  const g=document.getElementById('presetGrid');
+  Object.entries(PRESETS).forEach(([id,p])=>{
+    const b=document.createElement('button');
+    b.className='preset-btn'+(id===STATE.selectedPreset?' active':'');
+    b.dataset.id=id;
+    b.innerHTML=`<span class="preset-label">${p.label}</span><span class="preset-desc">${p.description}</span>`;
+    b.onclick=()=>{
+      STATE.selectedPreset=id;
+      document.querySelectorAll('.preset-btn').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      updateSummary();
+    };
+    g.appendChild(b);
+  });
+}
+
+function initParams(){
+  const g=document.getElementById('paramGrid');
+  PARAMS.forEach(p=>{
+    const d=document.createElement('div'); d.className='param';
+    const l=document.createElement('label'); l.className='param-label'; l.textContent=p.label;
+    const s=document.createElement('select');
+    p.opts.forEach((o,i)=>{const opt=document.createElement('option');opt.value=i;opt.textContent=o;s.appendChild(opt);});
+    s.value=STATE[p.key];
+    s.onchange=()=>{ STATE[p.key]=parseInt(s.value); };
+    d.appendChild(l); d.appendChild(s); g.appendChild(d);
+  });
+}
+
+function initTabs(){
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.onclick=()=>switchTab(btn.dataset.tab);
+  });
+}
+
+function switchTab(id){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.toggle('active',c.id==='tab-'+id));
+  if(id==='generate') updateSummary();
+}
+
+function updateSummary(){
+  const p=PRESETS[STATE.selectedPreset];
+  document.getElementById('sumPreset').textContent=p.label;
+  const wc=document.getElementById('projectText').value.trim().split(/\s+/).filter(Boolean).length;
+  document.getElementById('sumScript').textContent=wc>0?wc+' слов':'не загружен';
+  const sa=document.getElementById('sumApi');
+  if(STATE.apiKey){sa.textContent='✓ Nano Banana 2';sa.className='summary-val ok';}
+  else{sa.textContent='нет ключа';sa.className='summary-val warn';}
+}
+
+function updateWordCount(){
+  const v=document.getElementById('projectText').value.trim().split(/\s+/).filter(Boolean).length;
+  document.getElementById('projectWordCount').textContent=v+' слов';
+}
+document.getElementById('projectText').addEventListener('input',updateWordCount);
+
+function updateScriptHint(){
+  const v=document.getElementById('scriptText').value.trim().split(/\s+/).filter(Boolean).length;
+  const sc=Math.max(1,Math.round(v/25));
+  document.getElementById('scriptHint').textContent=`${v} слов · ~${sc} сцен · ${sc*4} промтов`;
+}
+document.getElementById('scriptText').addEventListener('input',updateScriptHint);
+
+// ─── API KEY ──────────────────────────────────────────────────────────────
+document.getElementById('apiToggle').onclick=()=>{
+  STATE.showKey=!STATE.showKey;
+  document.getElementById('apiKeyInput').type=STATE.showKey?'text':'password';
+  document.getElementById('apiToggle').textContent=STATE.showKey?'🙈':'👁';
+};
+document.getElementById('apiSaveBtn').onclick=saveApiKey;
+document.getElementById('apiKeyInput').addEventListener('keydown',e=>{if(e.key==='Enter')saveApiKey();});
+
+function saveApiKey(){
+  const v=document.getElementById('apiKeyInput').value.trim();
+  if(v.length<10) return;
+  STATE.apiKey=v; STATE.apiKeySaved=true;
+  document.getElementById('apiDot').classList.add('connected');
+  document.getElementById('apiStatus').textContent='Gemini API подключён';
+  document.getElementById('apiRight').innerHTML=`<span class="api-masked">${'•'.repeat(12)} ${v.slice(-6)}</span><button class="api-change-btn" onclick="resetApiKey()">Изменить</button>`;
+  updateSummary();
+}
+
+function resetApiKey(){
+  STATE.apiKeySaved=false;
+  document.getElementById('apiDot').classList.remove('connected');
+  document.getElementById('apiStatus').textContent='Gemini API не настроен';
+  document.getElementById('apiRight').innerHTML=`<input type="password" class="api-input" id="apiKeyInput" placeholder="Вставь Gemini API ключ..."><button class="api-toggle" id="apiToggle">👁</button><button class="api-save-btn" id="apiSaveBtn">Сохранить</button>`;
+  document.getElementById('apiSaveBtn').onclick=saveApiKey;
+  document.getElementById('apiToggle').onclick=()=>{
+    STATE.showKey=!STATE.showKey;
+    document.getElementById('apiKeyInput').type=STATE.showKey?'text':'password';
+    document.getElementById('apiToggle').textContent=STATE.showKey?'🙈':'👁';
+  };
+  document.getElementById('apiKeyInput').addEventListener('keydown',e=>{if(e.key==='Enter')saveApiKey();});
+  updateSummary();
+}
+
+// ─── REFERENCE IMAGES ─────────────────────────────────────────────────────
+function setupRefInput(inputId, areaId, stateKey, descKey){
+  document.getElementById(inputId).onchange=function(){
+    const f=this.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=e=>{
+      STATE[stateKey]=e.target.result;
+      document.getElementById(areaId).innerHTML=`
+        <div class="ref-preview">
+          <img src="${e.target.result}" class="ref-img">
+          <div class="ref-info">
+            <textarea rows="3" placeholder="Опиши что важно в этом референсе..." style="font-size:11px" onchange="STATE['${descKey}']=this.value"></textarea>
+            <button class="clear-btn" onclick="clearRef('${areaId}','${inputId}','${stateKey}','${descKey}')">Удалить референс</button>
+          </div>
+        </div>`;
+    };
+    r.readAsDataURL(f);
+  };
+}
+
+function clearRef(areaId, inputId, stateKey, descKey){
+  STATE[stateKey]=null; STATE[descKey]='';
+  document.getElementById(inputId).value='';
+  const isGlobal=areaId==='globalRefArea';
+  document.getElementById(areaId).innerHTML=isGlobal
+    ?`<div class="drop-zone" onclick="document.getElementById('${inputId}').click()"><span class="drop-icon">⊕</span><span class="drop-text">Загрузить референс-изображение</span><span class="drop-hint">JPG, PNG, WEBP</span></div>`
+    :`<div class="drop-zone" style="padding:14px 20px" onclick="document.getElementById('${inputId}').click()"><span class="drop-icon">⊕</span><span class="drop-text">Референс для этой сцены</span></div>`;
+}
+setupRefInput('globalRefInput','globalRefArea','globalRefData','globalRefDesc');
+setupRefInput('sceneRefInput','sceneRefArea','sceneRefData','sceneRefDesc');
+
+// ─── SYSTEM PROMPT ────────────────────────────────────────────────────────
+function buildSystemPrompt(projectContext){
+  const p=PRESETS[STATE.selectedPreset];
+  return `You are an elite AI image prompt engineer for dark cinematic YouTube documentaries. Your prompts are used in professional video production.
+
+VISUAL LANGUAGE: Denis Villeneuve, Ridley Scott, Roger Deakins. Every frame must feel like a still from a $200M film. Oppressive atmosphere, layered depth, single purposeful light source, desaturated with one accent color, volumetric everything.
+
+${projectContext?`PROJECT CONTEXT (use this to inform all visual choices):\n${projectContext}`:''}
+
+STYLE CONFIGURATION:
+- Preset: ${p.label} — ${p.description}
+- Visual style: ${p.style}
+- Lighting: ${LIGHT_OPTS[STATE.lighting]}
+- Color palette: ${TEMP_OPTS[STATE.colorTemp]}
+- Contrast: ${CONTRAST_OPTS[STATE.contrast]}
+- Lens: ${LENS_OPTS[STATE.lens]}
+- Depth of field: ${DOF_OPTS[STATE.dof]}
+- Atmosphere: ${PARTICLES_OPTS[STATE.particles]}
+- Scale: ${SCALE_OPTS[STATE.scale]}
+- Time/conditions: ${TIME_OPTS[STATE.timeOfDay]}
+${STATE.globalRefDesc?`- Global visual reference: ${STATE.globalRefDesc}`:''}
+${STATE.sceneRefDesc?`- Scene visual reference: ${STATE.sceneRefDesc}`:''}
+
+DARKNESS RULES (mandatory):
+- Shadows are DEEP — never lifted, never milky
+- Midtones are desaturated — color lives only in highlights or single accent
+- Atmosphere is LAYERED — foreground element, mid haze, background depth
+- Light has ONE source and ONE purpose
+- Scale must feel OVERWHELMING
+
+YOUR TASK:
+1. Read the script fragment
+2. Split into semantic scenes — each ~8-10 seconds (~25 spoken words)
+3. For each scene generate EXACTLY 4 camera angle variants
+
+THE 4 ANGLES:
+1. WIDE — subject tiny, environment dominates, epic scale
+2. MEDIUM — subject 40-60% of frame
+3. MACRO — extreme close-up of one texture or feature
+4. CREATIVE — bold unexpected angle: POV, reflection, silhouette, top-down, through-object
+
+OUTPUT — return ONLY valid JSON, zero markdown:
+{"scene_count":<n>,"scenes":[{"id":1,"subject":"<one line>","duration_hint":"<~Xs>","script_excerpt":"<exact words>","negative":"<comma-separated>","angles":[{"angle_id":"wide","label":"ШИРОКИЙ — Общий план","prompt":"<60-90 words English>"},{"angle_id":"medium","label":"СРЕДНИЙ — Субъект","prompt":"<60-90 words>"},{"angle_id":"macro","label":"МАКРО — Детализация","prompt":"<60-90 words>"},{"angle_id":"creative","label":"ТВОРЧЕСКИЙ — Подпись","prompt":"<60-90 words>"}]}]}`;
+}
+
+// ─── GENERATE PROMPTS ─────────────────────────────────────────────────────
+async function generatePrompts(){
+  const script=document.getElementById('scriptText').value.trim();
+  if(!script) return;
+  const btn=document.getElementById('generateBtn');
+  btn.disabled=true; btn.textContent='ГЕНЕРИРУЮ...';
+  btn.style.animation='blink 1s infinite';
+  document.getElementById('genError').style.display='none';
+  document.getElementById('genLoad').style.display='block';
+  document.getElementById('results').innerHTML='';
+  STATE.generatedImgs={}; STATE.imgErrors={};
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:4000,
+        system:buildSystemPrompt(document.getElementById('projectText').value.trim()),
+        messages:[{role:'user',content:`Convert this script fragment into cinematic image prompts with 4 camera angles:\n\n"${script}"`}]
+      })
+    });
+    const data=await res.json();
+    const raw=data.content?.find(b=>b.type==='text')?.text||'';
+    const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    STATE.results=parsed;
+    renderResults(parsed);
+    STATE.history.unshift({id:Date.now(),script:script.substring(0,60)+'…',preset:STATE.selectedPreset,result:parsed});
+    if(STATE.history.length>20) STATE.history.pop();
+    renderHistory();
+  }catch(e){
+    document.getElementById('genError').textContent='Ошибка генерации: '+e.message;
+    document.getElementById('genError').style.display='block';
+  }finally{
+    btn.disabled=false; btn.textContent='ГЕНЕРИРОВАТЬ ПРОМТЫ'; btn.style.animation='';
+    document.getElementById('genLoad').style.display='none';
+  }
+}
+
+// ─── RENDER RESULTS ───────────────────────────────────────────────────────
+function renderResults(data){
+  const container=document.getElementById('results');
+  const header=document.createElement('div'); header.className='res-head';
+  const sc=data.scene_count;
+  const label=sc===1?'СЦЕНА':sc<5?'СЦЕНЫ':'СЦЕН';
+  header.innerHTML=`<span class="res-label">${sc} ${label} · ${sc*4} ПРОМТОВ</span><button class="ghost-btn" onclick="copyAll()">Копировать всё</button>`;
+  container.appendChild(header);
+
+  data.scenes.forEach((scene,si)=>{
+    const card=document.createElement('div'); card.className='scene-card';
+
+    const head=document.createElement('div'); head.className='scene-head';
+    head.innerHTML=`
+      <div class="scene-l">
+        <div class="scene-circle"><span class="scene-n">${String(si+1).padStart(2,'0')}</span></div>
+        <div>
+          <div class="scene-subj">${scene.subject}</div>
+          <div class="scene-meta">
+            <span class="tag">${scene.duration_hint}</span>
+            <span class="tag">4 ракурса</span>
+            <span class="tag tag-italic">"${(scene.script_excerpt||'').substring(0,45)}${(scene.script_excerpt||'').length>45?'…':''}"</span>
+          </div>
+        </div>
+      </div>
+      <div class="scene-r">
+        <button class="ghost-btn" onclick="event.stopPropagation();copyScene(${si})">Копировать сцену</button>
+        <span class="chev">▼</span>
+      </div>`;
+
+    const anglesWrap=document.createElement('div');
+    anglesWrap.className='angles-wrap'+(si===0?' open':'');
+    head.querySelector('.chev').textContent=si===0?'▲':'▼';
+
+    head.onclick=()=>{
+      const open=anglesWrap.classList.toggle('open');
+      head.querySelector('.chev').textContent=open?'▲':'▼';
+    };
+
+    scene.angles.forEach(angle=>{
+      const c=ANGLE_COLORS[angle.angle_id]||ANGLE_COLORS.wide;
+      const ac=document.createElement('div'); ac.className='angle-card';
+      ac.style.background=c.bg; ac.style.borderLeft=`2px solid ${c.border}`;
+      const key=`${si}-${angle.angle_id}`;
+      ac.innerHTML=`
+        <div class="angle-top">
+          <span class="angle-label" style="color:${c.color}">${angle.label}</span>
+          <div class="angle-btns">
+            <button class="mini-btn" id="cpbtn-${key}" onclick="copyText('${key}',\`${angle.prompt.replace(/`/g,"'")}\`)">Копировать</button>
+            ${STATE.apiKey?`<button class="mini-btn gen" id="genbtn-${key}" onclick="generateImage('${key}',\`${angle.prompt.replace(/`/g,"'")}\`)">🖼 Создать</button>`:''}
+          </div>
+        </div>
+        <p class="angle-prompt">${angle.prompt}</p>
+        <div id="img-${key}"></div>`;
+      anglesWrap.appendChild(ac);
+    });
+
+    const negRow=document.createElement('div'); negRow.className='neg-row';
+    negRow.innerHTML=`<span class="neg-label">НЕГАТИВ</span><p class="neg-txt">${scene.negative}</p><button class="mini-btn" onclick="copyText('neg${si}','${scene.negative}')">Копировать</button>`;
+    anglesWrap.appendChild(negRow);
+
+    card.appendChild(head); card.appendChild(anglesWrap);
+    container.appendChild(card);
+  });
+}
+
+// ─── GENERATE IMAGE ───────────────────────────────────────────────────────
+async function generateImage(key, prompt){
+  if(!STATE.apiKey) return;
+  const btn=document.getElementById('genbtn-'+key);
+  if(btn){btn.disabled=true;btn.innerHTML='<span>⟳</span>';btn.classList.add('spinning');}
+  document.getElementById('img-'+key).innerHTML='';
+
+  const models=['gemini-3.1-flash-image','gemini-2.5-flash-image','gemini-2.0-flash-preview-image-generation'];
+  let lastErr=null;
+
+  for(const model of models){
+    try{
+      const url=`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${STATE.apiKey}`;
+      const res=await fetch(url,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{responseModalities:['TEXT','IMAGE']}})
+      });
+      if(!res.ok){const e=await res.json().catch(()=>({}));lastErr=e?.error?.message||`HTTP ${res.status}`;continue;}
+      const data=await res.json();
+      const parts=data?.candidates?.[0]?.content?.parts||[];
+      const imgPart=parts.find(p=>p.inlineData?.mimeType?.startsWith('image/'));
+      if(!imgPart){lastErr='Нет изображения в ответе';continue;}
+      const dataUrl=`data:${imgPart.inlineData.mimeType};base64,${imgPart.inlineData.data}`;
+      STATE.generatedImgs[key]=dataUrl;
+      const slot=document.getElementById('img-'+key);
+      if(slot) slot.innerHTML=`
+        <div class="img-wrap">
+          <img src="${dataUrl}" class="img-result">
+          <div class="img-actions">
+            <button class="img-dl-btn" onclick="downloadImg('${key}')">↓ Скачать</button>
+            <button class="img-regen-btn" onclick="generateImage('${key}',\`${prompt.replace(/`/g,"'")}\`)">⟳ Перегенерировать</button>
+          </div>
+        </div>`;
+      if(btn){btn.disabled=false;btn.innerHTML='🖼 Создать';btn.classList.remove('spinning');}
+      return;
+    }catch(e){lastErr=e.message;}
+  }
+  const slot=document.getElementById('img-'+key);
+  if(slot) slot.innerHTML=`<div class="img-err">⚠ ${lastErr||'Все модели недоступны'}</div>`;
+  if(btn){btn.disabled=false;btn.innerHTML='🖼 Создать';btn.classList.remove('spinning');}
+}
+
+function downloadImg(key){
+  const url=STATE.generatedImgs[key]; if(!url) return;
+  const a=document.createElement('a'); a.href=url; a.download=`promptforge-${key}.png`; a.click();
+}
+
+// ─── COPY ─────────────────────────────────────────────────────────────────
+function copyText(id, text){
+  const tryExec=()=>{
+    const el=document.createElement('textarea'); el.value=text;
+    el.style.cssText='position:fixed;opacity:0'; document.body.appendChild(el);
+    el.focus(); el.select(); try{document.execCommand('copy');}catch{}
+    document.body.removeChild(el);
+  };
+  if(navigator.clipboard?.writeText) navigator.clipboard.writeText(text).catch(tryExec);
+  else tryExec();
+  const btn=document.getElementById('cpbtn-'+id)||document.getElementById('negbtn-'+id);
+  if(btn){const orig=btn.textContent;btn.textContent='✓ Скопировано';btn.classList.add('done');setTimeout(()=>{btn.textContent=orig;btn.classList.remove('done');},1800);}
+}
+
+function copyScene(si){
+  if(!STATE.results) return;
+  const scene=STATE.results.scenes[si];
+  const t=scene.angles.map(a=>`[${a.label}]\n${a.prompt}`).join('\n\n')+`\n\nНЕГАТИВ: ${scene.negative}`;
+  if(navigator.clipboard?.writeText) navigator.clipboard.writeText(t).catch(()=>{});
+  else{const el=document.createElement('textarea');el.value=t;el.style.cssText='position:fixed;opacity:0';document.body.appendChild(el);el.focus();el.select();document.execCommand('copy');document.body.removeChild(el);}
+}
+
+function copyAll(){
+  if(!STATE.results) return;
+  const t=STATE.results.scenes.map((sc,i)=>`=== СЦЕНА ${i+1}: ${sc.subject} (${sc.duration_hint}) ===\nСкрипт: "${sc.script_excerpt}"\n\n`+sc.angles.map(a=>`[${a.label}]\n${a.prompt}`).join('\n\n')+`\n\nНЕГАТИВ: ${sc.negative}`).join('\n\n\n');
+  if(navigator.clipboard?.writeText) navigator.clipboard.writeText(t).catch(()=>{});
+  else{const el=document.createElement('textarea');el.value=t;el.style.cssText='position:fixed;opacity:0';document.body.appendChild(el);el.focus();el.select();document.execCommand('copy');document.body.removeChild(el);}
+}
+
+// ─── HISTORY ──────────────────────────────────────────────────────────────
+function renderHistory(){
+  const badge=document.getElementById('histBadge');
+  badge.textContent=STATE.history.length;
+  badge.style.display=STATE.history.length>0?'':'none';
+  const list=document.getElementById('historyList');
+  if(STATE.history.length===0){list.innerHTML='<div class="empty">История пуста — сгенерируй первые промты</div>';return;}
+  list.innerHTML='';
+  STATE.history.forEach((h,hi)=>{
+    const card=document.createElement('div'); card.className='scene-card'; card.style.marginBottom='10px';
+    card.innerHTML=`
+      <div class="scene-head" style="cursor:default">
+        <div class="scene-l">
+          <div class="scene-circle"><span class="scene-n">${String(hi+1).padStart(2,'0')}</span></div>
+          <div>
+            <div class="scene-subj">${h.script}</div>
+            <div class="scene-meta">
+              <span class="tag">${PRESETS[h.preset]?.label||h.preset}</span>
+              <span class="tag">${h.result.scene_count} сцен · ${h.result.scene_count*4} промтов</span>
+            </div>
+          </div>
+        </div>
+        <button class="ghost-btn" onclick="copyHistItem(${hi})">Копировать</button>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+function copyHistItem(hi){
+  const h=STATE.history[hi]; if(!h) return;
+  const t=h.result.scenes.map((sc,i)=>`=== СЦЕНА ${i+1}: ${sc.subject} ===\n`+sc.angles.map(a=>`[${a.label}]\n${a.prompt}`).join('\n\n')+`\n\nНЕГАТИВ: ${sc.negative}`).join('\n\n\n');
+  if(navigator.clipboard?.writeText) navigator.clipboard.writeText(t).catch(()=>{});
+}
+
+function clearHistory(){STATE.history=[];renderHistory();}
+
+// ─── BOOT ─────────────────────────────────────────────────────────────────
+initPresets(); initParams(); initTabs(); renderHistory();
+</script>
+</body>
+</html>
