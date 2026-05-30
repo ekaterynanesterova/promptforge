@@ -553,7 +553,7 @@ async function generatePrompts(){
   const userMsg=`Convert this script fragment into cinematic image prompts with 4 camera angles per scene:\n\n"${script}"`;
 
   try{
-    const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${STATE.apiKey}`;
+    const url=`https://corsproxy.io/?url=${encodeURIComponent('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+STATE.apiKey)}`;
     const res=await fetch(url,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -660,7 +660,7 @@ async function generateImage(key, prompt){
 
   for(const model of models){
     try{
-      const url=`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${STATE.apiKey}`;
+      const url=`https://corsproxy.io/?url=${encodeURIComponent('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+STATE.apiKey)}`;
       const res=await fetch(url,{
         method:'POST',
         headers:{'Content-Type':'application/json'},
