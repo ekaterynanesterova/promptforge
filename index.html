@@ -168,14 +168,14 @@ select{font-size:11px;padding:7px 10px;width:100%}
   <div class="header">
     <div class="orb"></div>
     <h1 class="title">PROMPT<span>FORGE</span></h1>
-    <p class="subtitle">Кинематографичный генератор · 4 ракурса · Генерация картинок · Nano Banana 2</p>
+    <p class="subtitle">Кинематографичный генератор · 4 ракурса · Промты + Картинки · Gemini API</p>
   </div>
 
   <!-- API KEY BAR -->
   <div class="api-bar">
     <div class="api-left">
       <div class="api-dot" id="apiDot"></div>
-      <span class="api-status" id="apiStatus">Gemini API не настроен</span>
+      <span class="api-status" id="apiStatus">Gemini API не настроен — нужен для промтов и картинок</span>
     </div>
     <div class="api-right" id="apiRight">
       <input type="password" class="api-input" id="apiKeyInput" placeholder="Вставь Gemini API ключ...">
@@ -449,7 +449,7 @@ function saveApiKey(){
 function resetApiKey(){
   STATE.apiKeySaved=false;
   document.getElementById('apiDot').classList.remove('connected');
-  document.getElementById('apiStatus').textContent='Gemini API не настроен';
+  document.getElementById('apiStatus').textContent='Gemini API не настроен — нужен для промтов и картинок';
   document.getElementById('apiRight').innerHTML=`<input type="password" class="api-input" id="apiKeyInput" placeholder="Вставь Gemini API ключ..."><button class="api-toggle" id="apiToggle">👁</button><button class="api-save-btn" id="apiSaveBtn">Сохранить</button>`;
   document.getElementById('apiSaveBtn').onclick=saveApiKey;
   document.getElementById('apiToggle').onclick=()=>{
@@ -540,7 +540,7 @@ OUTPUT — return ONLY valid JSON, zero markdown:
 // ─── GENERATE PROMPTS ─────────────────────────────────────────────────────
 async function generatePrompts(){
   const script=document.getElementById('scriptText').value.trim();
-  if(!script) return;
+  if(!script||!STATE.apiKey) return;
   const btn=document.getElementById('generateBtn');
   btn.disabled=true; btn.textContent='ГЕНЕРИРУЮ...';
   btn.style.animation='blink 1s infinite';
@@ -549,20 +549,24 @@ async function generatePrompts(){
   document.getElementById('results').innerHTML='';
   STATE.generatedImgs={}; STATE.imgErrors={};
 
+  const systemPrompt=buildSystemPrompt(document.getElementById('projectText').value.trim());
+  const userMsg=`Convert this script fragment into cinematic image prompts with 4 camera angles per scene:\n\n"${script}"`;
+
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
+    const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${STATE.apiKey}`;
+    const res=await fetch(url,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:4000,
-        system:buildSystemPrompt(document.getElementById('projectText').value.trim()),
-        messages:[{role:'user',content:`Convert this script fragment into cinematic image prompts with 4 camera angles:\n\n"${script}"`}]
+        contents:[{parts:[{text:systemPrompt+'\n\n'+userMsg}]}],
+        generationConfig:{temperature:0.7,maxOutputTokens:4000}
       })
     });
+    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||'Gemini error '+res.status);}
     const data=await res.json();
-    const raw=data.content?.find(b=>b.type==='text')?.text||'';
-    const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    const clean=raw.replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(clean);
     STATE.results=parsed;
     renderResults(parsed);
     STATE.history.unshift({id:Date.now(),script:script.substring(0,60)+'…',preset:STATE.selectedPreset,result:parsed});
@@ -576,6 +580,7 @@ async function generatePrompts(){
     document.getElementById('genLoad').style.display='none';
   }
 }
+
 
 // ─── RENDER RESULTS ───────────────────────────────────────────────────────
 function renderResults(data){
