@@ -534,7 +534,7 @@ THE 4 ANGLES:
 4. CREATIVE — bold unexpected angle: POV, reflection, silhouette, top-down, through-object
 
 OUTPUT — return ONLY valid JSON, zero markdown:
-{"scene_count":<n>,"scenes":[{"id":1,"subject":"<one line>","duration_hint":"<~Xs>","script_excerpt":"<exact words>","negative":"<comma-separated>","angles":[{"angle_id":"wide","label":"ШИРОКИЙ — Общий план","prompt":"<60-90 words English>"},{"angle_id":"medium","label":"СРЕДНИЙ — Субъект","prompt":"<60-90 words>"},{"angle_id":"macro","label":"МАКРО — Детализация","prompt":"<60-90 words>"},{"angle_id":"creative","label":"ТВОРЧЕСКИЙ — Подпись","prompt":"<60-90 words>"}]}]}`;
+{"scene_count":<n>,"scenes":[{"id":1,"subject":"<one line>","duration_hint":"<~Xs>","script_excerpt":"<exact words>","negative":"<comma-separated>","angles":[{"angle_id":"wide","label":"ШИРОКИЙ — Общий план","prompt":"<70-90 words English, rich detail>"},{"angle_id":"medium","label":"СРЕДНИЙ — Субъект","prompt":"<70-90 words>"},{"angle_id":"macro","label":"МАКРО — Детализация","prompt":"<70-90 words>"},{"angle_id":"creative","label":"ТВОРЧЕСКИЙ — Подпись","prompt":"<70-90 words>"}]}]}`;
 }
 
 // ─── GENERATE PROMPTS ─────────────────────────────────────────────────────
@@ -549,27 +549,41 @@ async function generatePrompts(){
   document.getElementById('results').innerHTML='';
   STATE.generatedImgs={}; STATE.imgErrors={};
 
-  const systemPrompt=buildSystemPrompt(document.getElementById('projectText').value.trim());
-  const userMsg=`Convert this script fragment into cinematic image prompts with 4 camera angles per scene:\n\n"${script}"`;
+  const projectContext=document.getElementById('projectText').value.trim();
 
   try{
-    const url=`https://corsproxy.io/?url=${encodeURIComponent('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+STATE.apiKey)}`;
-    const res=await fetch(url,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        contents:[{parts:[{text:systemPrompt+'\n\n'+userMsg}]}],
-        generationConfig:{temperature:0.7,maxOutputTokens:4000}
-      })
-    });
-    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||'Gemini error '+res.status);}
-    const data=await res.json();
-    const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
-    const clean=raw.replace(/```json|```/g,'').trim();
-    const parsed=JSON.parse(clean);
-    STATE.results=parsed;
-    renderResults(parsed);
-    STATE.history.unshift({id:Date.now(),script:script.substring(0,60)+'…',preset:STATE.selectedPreset,result:parsed});
+    // Step 1: ask Gemini how many scenes and what each covers
+    const planPrompt=buildSystemPrompt(projectContext)+`\n\nFirst, split this script fragment into semantic scenes (each ~8-10 seconds, ~25 spoken words). Return ONLY valid JSON, no markdown:\n{"scene_count":<n>,"scenes":[{"id":1,"subject":"<one line>","duration_hint":"<~Xs>","script_excerpt":"<exact words from script>","negative":"<what to avoid>"}]}\n\nScript: "${script}"`;
+
+    const planUrl=`https://corsproxy.io/?url=${encodeURIComponent('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+STATE.apiKey)}`;
+    const planRes=await fetch(planUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:planPrompt}]}],generationConfig:{temperature:0.5,maxOutputTokens:2000}})});
+    if(!planRes.ok){const e=await planRes.json().catch(()=>({}));throw new Error(e?.error?.message||'Ошибка планирования сцен');}
+    const planData=await planRes.json();
+    const planRaw=planData.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    const plan=JSON.parse(planRaw.replace(/```json|```/g,'').trim());
+
+    // Step 2: generate 4 angles per scene one by one
+    const fullResult={scene_count:plan.scene_count,scenes:[]};
+    document.getElementById('genLoad').querySelector('.load-txt').textContent=`Генерирую сцены: 0 из ${plan.scene_count}...`;
+
+    for(let i=0;i<plan.scenes.length;i++){
+      const scene=plan.scenes[i];
+      document.getElementById('genLoad').querySelector('.load-txt').textContent=`Генерирую сцену ${i+1} из ${plan.scene_count}...`;
+
+      const anglePrompt=buildSystemPrompt(projectContext)+`\n\nGenerate EXACTLY 4 camera angle prompts for this scene:\nSubject: ${scene.subject}\nScript excerpt: "${scene.script_excerpt}"\n\nReturn ONLY valid JSON, no markdown:\n{"angles":[{"angle_id":"wide","label":"ШИРОКИЙ — Общий план","prompt":"<70-90 words cinematic English>"},{"angle_id":"medium","label":"СРЕДНИЙ — Субъект","prompt":"<70-90 words>"},{"angle_id":"macro","label":"МАКРО — Детализация","prompt":"<70-90 words>"},{"angle_id":"creative","label":"ТВОРЧЕСКИЙ — Подпись","prompt":"<70-90 words, bold unexpected angle>"}]}`;
+
+      const angRes=await fetch(planUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:anglePrompt}]}],generationConfig:{temperature:0.8,maxOutputTokens:3000}})});
+      if(!angRes.ok){const e=await angRes.json().catch(()=>({}));throw new Error(e?.error?.message||`Ошибка сцены ${i+1}`);}
+      const angData=await angRes.json();
+      const angRaw=angData.candidates?.[0]?.content?.parts?.[0]?.text||'';
+      const angles=JSON.parse(angRaw.replace(/```json|```/g,'').trim());
+
+      fullResult.scenes.push({...scene,...angles});
+    }
+
+    STATE.results=fullResult;
+    renderResults(fullResult);
+    STATE.history.unshift({id:Date.now(),script:script.substring(0,60)+'…',preset:STATE.selectedPreset,result:fullResult});
     if(STATE.history.length>20) STATE.history.pop();
     renderHistory();
   }catch(e){
@@ -577,10 +591,10 @@ async function generatePrompts(){
     document.getElementById('genError').style.display='block';
   }finally{
     btn.disabled=false; btn.textContent='ГЕНЕРИРОВАТЬ ПРОМТЫ'; btn.style.animation='';
+    document.getElementById('genLoad').querySelector('.load-txt').textContent='Анализирую сцены · Применяю стиль · Строю 4 ракурса...';
     document.getElementById('genLoad').style.display='none';
   }
 }
-
 
 // ─── RENDER RESULTS ───────────────────────────────────────────────────────
 function renderResults(data){
