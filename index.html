@@ -694,7 +694,7 @@ async function generateImage(key, prompt){
     {
       url:`https://generativelanguage.googleapis.com/v1/models/gemini-3.1-flash-image:generateContent?key=${STATE.apiKey}`,
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{responseModalities:['TEXT','IMAGE']}}),
+      body:JSON.stringify({contents:[{parts:[{text:prompt}]}]}),
       parse:(data)=>{
         const parts=data?.candidates?.[0]?.content?.parts||[];
         const p=parts.find(p=>(p.inlineData||p.inline_data));
