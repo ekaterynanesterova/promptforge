@@ -503,14 +503,26 @@ ${projectContext?'PROJECT: '+projectContext.substring(0,500):''}`.trim();
 }
 
 function safeParseJSON(raw){
-  // Clean markdown fences
   let s=raw.replace(/\`\`\`json|\`\`\`/g,'').trim();
-  // Try direct parse first
   try{ return JSON.parse(s); }catch(e){}
-  // Try to fix truncated JSON by finding last complete object
-  // Find last valid closing brace for the root object
-  let depth=0, lastValid=-1;
-  let inStr=false, esc=false;
+  // Fix literal newlines/tabs inside JSON string values
+  function fixStr(str){
+    let out='',inStr=false,esc=false;
+    for(let i=0;i<str.length;i++){
+      const c=str[i];
+      if(esc){out+=c;esc=false;continue;}
+      if(c==='\\'){out+=c;esc=true;continue;}
+      if(c==='"'){inStr=!inStr;out+=c;continue;}
+      if(inStr&&c==='\n'){out+='\\n';continue;}
+      if(inStr&&c==='\r'){out+='\\r';continue;}
+      if(inStr&&c==='\t'){out+='\\t';continue;}
+      out+=c;
+    }
+    return out;
+  }
+  try{ return JSON.parse(fixStr(s)); }catch(e){}
+  // Find last complete valid object as fallback
+  let depth=0,lastValid=-1,inStr=false,esc=false;
   for(let i=0;i<s.length;i++){
     const c=s[i];
     if(esc){esc=false;continue;}
@@ -521,7 +533,7 @@ function safeParseJSON(raw){
     if(c==='}'||c===']'){depth--;if(depth===0)lastValid=i;}
   }
   if(lastValid>0){
-    try{ return JSON.parse(s.substring(0,lastValid+1)); }catch(e){}
+    try{ return JSON.parse(fixStr(s.substring(0,lastValid+1))); }catch(e){}
   }
   throw new Error('Не удалось распарсить JSON от Gemini');
 }
