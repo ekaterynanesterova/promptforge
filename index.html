@@ -302,7 +302,8 @@ const STATE = {
   lens: 0, dof: 0, lighting: 0, timeOfDay: 0, colorTemp: 0, contrast: 0, particles: 0, scale: 3,
   globalRefData: null, globalRefDesc: '', sceneRefData: null, sceneRefDesc: '',
   results: null, history: [], expanded: null,
-  generatingImg: {}, generatedImgs: {}, imgErrors: {}
+  generatingImg: {}, generatedImgs: {}, imgErrors: {},
+  imgModel: 'flux-cinematic'
 };
 
 // ─── PRESETS ──────────────────────────────────────────────────────────────
@@ -623,7 +624,7 @@ function renderResults(data){
   const header=document.createElement('div'); header.className='res-head';
   const sc=data.scene_count;
   const label=sc===1?'СЦЕНА':sc<5?'СЦЕНЫ':'СЦЕН';
-  header.innerHTML=`<span class="res-label">${sc} ${label} · ${sc*4} ПРОМТОВ</span><button class="ghost-btn" onclick="copyAll()">Копировать всё</button>`;
+  header.innerHTML=`<span class="res-label">${sc} ${label} · ${sc*4} ПРОМТОВ</span><div style="display:flex;gap:8px;align-items:center"><select id="imgModelSelect" style="font-size:9px;padding:4px 8px;background:rgba(5,12,30,0.9);border:1px solid rgba(60,120,255,0.2);color:rgba(90,150,255,0.7);border-radius:2px" onchange="STATE.imgModel=this.value"><option value="flux-cinematic" selected>flux-cinematic</option><option value="flux-realism">flux-realism</option><option value="flux">flux</option></select><button class="ghost-btn" onclick="copyAll()">Копировать всё</button></div>`;
   container.appendChild(header);
 
   data.scenes.forEach((scene,si)=>{
@@ -685,52 +686,39 @@ function renderResults(data){
 
 // ─── GENERATE IMAGE ───────────────────────────────────────────────────────
 async function generateImage(key, prompt){
-  if(!STATE.apiKey) return;
   const btn=document.getElementById('genbtn-'+key);
   if(btn){btn.disabled=true;btn.innerHTML='<span>⟳</span>';btn.classList.add('spinning');}
   document.getElementById('img-'+key).innerHTML='';
 
-  const attempts=[
-    {
-      url:`https://generativelanguage.googleapis.com/v1/models/gemini-3.1-flash-image:generateContent?key=${STATE.apiKey}`,
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({contents:[{parts:[{text:prompt}]}]}),
-      parse:(data)=>{
-        const parts=data?.candidates?.[0]?.content?.parts||[];
-        const p=parts.find(p=>(p.inlineData||p.inline_data));
-        if(!p) return null;
-        const raw=p.inlineData||p.inline_data;
-        return {mimeType:raw.mimeType||raw.mime_type,data:raw.data};
-      }
-    }
-  ];
+  const model=STATE.imgModel||'flux-cinematic';
+  const seed=Math.floor(Math.random()*999999);
+  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?model=${model}&width=1280&height=720&nologo=true&seed=${seed}`;
 
-  let lastErr='Все модели недоступны';
-  for(const attempt of attempts){
-    try{
-      const res=await fetch(attempt.url,{method:'POST',headers:attempt.headers,body:attempt.body});
-      const data=await res.json();
-      if(!res.ok){lastErr=data?.error?.message||`HTTP ${res.status}`;continue;}
-      const img=attempt.parse(data);
-      if(!img){lastErr='Нет изображения в ответе';continue;}
-      const dataUrl=`data:${img.mimeType};base64,${img.data}`;
-      STATE.generatedImgs[key]=dataUrl;
-      const slot=document.getElementById('img-'+key);
-      const safePrompt=prompt.replace(/`/g,"'").replace(/\\/g,'\\');
-      if(slot) slot.innerHTML=`
-        <div class="img-wrap">
-          <img src="${dataUrl}" class="img-result">
-          <div class="img-actions">
-            <button class="img-dl-btn" onclick="downloadImg('${key}')">↓ Скачать</button>
-            <button class="img-regen-btn" onclick="generateImage('${key}',\`${safePrompt}\`)">⟳ Перегенерировать</button>
-          </div>
-        </div>`;
-      if(btn){btn.disabled=false;btn.innerHTML='🖼 Создать';btn.classList.remove('spinning');}
-      return;
-    }catch(e){lastErr=e.message;}
+  try{
+    const res=await fetch(url);
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const blob=await res.blob();
+    const objUrl=URL.createObjectURL(blob);
+    STATE.generatedImgs[key]=objUrl;
+
+    // Автоскачивание в Downloads
+    const a=document.createElement('a');
+    a.href=objUrl; a.download=`promptforge-${key}.png`; a.click();
+
+    const slot=document.getElementById('img-'+key);
+    const safePrompt=prompt.replace(/`/g,"'").replace(/\\/g,'\\');
+    if(slot) slot.innerHTML=`
+      <div class="img-wrap">
+        <img src="${objUrl}" class="img-result">
+        <div class="img-actions">
+          <button class="img-dl-btn" onclick="downloadImg('${key}')">↓ Скачать ещё раз</button>
+          <button class="img-regen-btn" onclick="generateImage('${key}',\`${safePrompt}\`)">⟳ Перегенерировать</button>
+        </div>
+      </div>`;
+  }catch(e){
+    const slot=document.getElementById('img-'+key);
+    if(slot) slot.innerHTML=`<div class="img-err">⚠ ${e.message}</div>`;
   }
-  const slot=document.getElementById('img-'+key);
-  if(slot) slot.innerHTML=`<div class="img-err">⚠ ${lastErr}</div>`;
   if(btn){btn.disabled=false;btn.innerHTML='🖼 Создать';btn.classList.remove('spinning');}
 }
 
