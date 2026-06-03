@@ -562,7 +562,7 @@ Split this script into semantic scenes (~8-10 sec each, ~25 words). Return ONLY 
 Script: "${script}"`;
 
     const planUrl=`https://corsproxy.io/?url=${encodeURIComponent('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+STATE.apiKey)}`;
-    const planRes=await fetch(planUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:planPrompt}]}],generationConfig:{temperature:0.5,maxOutputTokens:2000}})});
+    const planRes=await fetch(planUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:planPrompt}]}],generationConfig:{temperature:0.5,maxOutputTokens:2000,responseMimeType:'application/json'}})});
     if(!planRes.ok){const e=await planRes.json().catch(()=>({}));throw new Error(e?.error?.message||'Ошибка планирования сцен');}
     const planData=await planRes.json();
     const planRaw=planData.candidates?.[0]?.content?.parts?.find(p=>!p.thought)?.text||'';
@@ -591,7 +591,7 @@ Return ONLY this JSON (no markdown, no explanation):
 {"angle_id":"creative","label":"ТВОРЧЕСКИЙ — Подпись","prompt":"WRITE 70-90 WORD BOLD UNEXPECTED ANGLE PROMPT HERE"}
 ]}`;
 
-      const angRes=await fetch(planUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:anglePrompt}]}],generationConfig:{temperature:0.8,maxOutputTokens:3000}})});
+      const angRes=await fetch(planUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:anglePrompt}]}],generationConfig:{temperature:0.8,maxOutputTokens:3000,responseMimeType:'application/json'}})});
       if(!angRes.ok){const e=await angRes.json().catch(()=>({}));throw new Error(e?.error?.message||`Ошибка сцены ${i+1}`);}
       const angData=await angRes.json();
       const angRaw=angData.candidates?.[0]?.content?.parts?.find(p=>!p.thought)?.text||'';
