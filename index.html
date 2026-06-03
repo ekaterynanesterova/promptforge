@@ -561,7 +561,7 @@ Split this script into semantic scenes (~8-10 sec each, ~25 words). Return ONLY 
 
 Script: "${script}"`;
 
-    const planUrl=`https://corsproxy.io/?url=${encodeURIComponent('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+STATE.apiKey)}`;
+    const planUrl=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${STATE.apiKey}`;
     const planRes=await fetch(planUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:planPrompt}]}],generationConfig:{temperature:0.5,maxOutputTokens:8000,responseMimeType:'application/json'}})});
     if(!planRes.ok){const e=await planRes.json().catch(()=>({}));throw new Error(e?.error?.message||'Ошибка планирования сцен');}
     const planData=await planRes.json();
@@ -690,34 +690,17 @@ async function generateImage(key, prompt){
   if(btn){btn.disabled=true;btn.innerHTML='<span>⟳</span>';btn.classList.add('spinning');}
   document.getElementById('img-'+key).innerHTML='';
 
-  // Try Interactions API (new) with gemini-3.1-flash-image, then fallback to generateContent
   const attempts=[
     {
-      url:`https://corsproxy.io/?url=${encodeURIComponent('https://generativelanguage.googleapis.com/v1beta/interactions')}`,
-      headers:{'Content-Type':'application/json','x-goog-api-key':STATE.apiKey,'Api-Revision':'2026-05-20'},
-      body:JSON.stringify({model:'gemini-3.1-flash-image',input:[{type:'text',text:prompt}]}),
-      parse:(data)=>{
-        const steps=data?.steps||data?.output||[];
-        for(const step of steps){
-          const parts=step?.content?.parts||step?.output||[];
-          for(const p of (Array.isArray(parts)?parts:[parts])){
-            if(p?.inlineData?.mimeType?.startsWith('image/')) return p.inlineData;
-            if(p?.mime_type?.startsWith('image/')) return {mimeType:p.mime_type,data:p.data};
-          }
-        }
-        // also check output_image convenience property
-        if(data?.output_image?.data) return {mimeType:'image/png',data:data.output_image.data};
-        return null;
-      }
-    },
-    {
-      url:`https://corsproxy.io/?url=${encodeURIComponent('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key='+STATE.apiKey)}`,
+      url:`https://generativelanguage.googleapis.com/v1/models/gemini-3.1-flash-image:generateContent?key=${STATE.apiKey}`,
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{responseModalities:['TEXT','IMAGE']}}),
       parse:(data)=>{
         const parts=data?.candidates?.[0]?.content?.parts||[];
-        const p=parts.find(p=>p.inlineData?.mimeType?.startsWith('image/'));
-        return p?p.inlineData:null;
+        const p=parts.find(p=>(p.inlineData||p.inline_data));
+        if(!p) return null;
+        const raw=p.inlineData||p.inline_data;
+        return {mimeType:raw.mimeType||raw.mime_type,data:raw.data};
       }
     }
   ];
