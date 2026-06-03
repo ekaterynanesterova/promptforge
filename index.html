@@ -303,7 +303,7 @@ const STATE = {
   globalRefData: null, globalRefDesc: '', sceneRefData: null, sceneRefDesc: '',
   results: null, history: [], expanded: null,
   generatingImg: {}, generatedImgs: {}, imgErrors: {},
-  imgModel: 'flux-cinematic'
+  imgModel: 'flux'
 };
 
 // ─── PRESETS ──────────────────────────────────────────────────────────────
@@ -624,7 +624,7 @@ function renderResults(data){
   const header=document.createElement('div'); header.className='res-head';
   const sc=data.scene_count;
   const label=sc===1?'СЦЕНА':sc<5?'СЦЕНЫ':'СЦЕН';
-  header.innerHTML=`<span class="res-label">${sc} ${label} · ${sc*4} ПРОМТОВ</span><div style="display:flex;gap:8px;align-items:center"><select id="imgModelSelect" style="font-size:9px;padding:4px 8px;background:rgba(5,12,30,0.9);border:1px solid rgba(60,120,255,0.2);color:rgba(90,150,255,0.7);border-radius:2px" onchange="STATE.imgModel=this.value"><option value="flux-cinematic" selected>flux-cinematic</option><option value="flux-realism">flux-realism</option><option value="flux">flux</option></select><button class="ghost-btn" onclick="copyAll()">Копировать всё</button></div>`;
+  header.innerHTML=`<span class="res-label">${sc} ${label} · ${sc*4} ПРОМТОВ</span><div style="display:flex;gap:8px;align-items:center"><select id="imgModelSelect" style="font-size:9px;padding:4px 8px;background:rgba(5,12,30,0.9);border:1px solid rgba(60,120,255,0.2);color:rgba(90,150,255,0.7);border-radius:2px" onchange="STATE.imgModel=this.value"><option value="flux" selected>flux</option><option value="flux-realism">flux-realism</option><option value="turbo">turbo (быстрее)</option></select><button class="ghost-btn" onclick="copyAll()">Копировать всё</button></div>`;
   container.appendChild(header);
 
   data.scenes.forEach((scene,si)=>{
