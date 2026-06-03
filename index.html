@@ -553,7 +553,7 @@ Script: "${script}"`;
     const planRes=await fetch(planUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:planPrompt}]}],generationConfig:{temperature:0.5,maxOutputTokens:2000}})});
     if(!planRes.ok){const e=await planRes.json().catch(()=>({}));throw new Error(e?.error?.message||'Ошибка планирования сцен');}
     const planData=await planRes.json();
-    const planRaw=planData.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    const planRaw=planData.candidates?.[0]?.content?.parts?.find(p=>!p.thought)?.text||'';
     let plan;
     try{ plan=safeParseJSON(planRaw); }
     catch(e){ throw new Error('План сцен: '+e.message+' | Ответ Gemini: '+planRaw.substring(0,300)); }
@@ -582,7 +582,7 @@ Return ONLY this JSON (no markdown, no explanation):
       const angRes=await fetch(planUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:anglePrompt}]}],generationConfig:{temperature:0.8,maxOutputTokens:3000}})});
       if(!angRes.ok){const e=await angRes.json().catch(()=>({}));throw new Error(e?.error?.message||`Ошибка сцены ${i+1}`);}
       const angData=await angRes.json();
-      const angRaw=angData.candidates?.[0]?.content?.parts?.[0]?.text||'';
+      const angRaw=angData.candidates?.[0]?.content?.parts?.find(p=>!p.thought)?.text||'';
       let angles;
       try{ angles=safeParseJSON(angRaw); }
       catch(e){ throw new Error('Углы сцены '+(i+1)+': '+e.message+' | Ответ: '+angRaw.substring(0,300)); }
