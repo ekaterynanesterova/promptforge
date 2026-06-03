@@ -561,8 +561,8 @@ Split this script into semantic scenes (~8-10 sec each, ~25 words). Return ONLY 
 
 Script: "${script}"`;
 
-    const planUrl=`https://corsproxy.io/?url=${encodeURIComponent('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+STATE.apiKey)}`;
-    const planRes=await fetch(planUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:planPrompt}]}],generationConfig:{temperature:0.5,maxOutputTokens:8000,responseMimeType:'application/json',thinkingConfig:{thinkingBudget:0}}})});
+    const planUrl=`https://corsproxy.io/?url=${encodeURIComponent('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+STATE.apiKey)}`;
+    const planRes=await fetch(planUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:planPrompt}]}],generationConfig:{temperature:0.5,maxOutputTokens:8000,responseMimeType:'application/json'}})});
     if(!planRes.ok){const e=await planRes.json().catch(()=>({}));throw new Error(e?.error?.message||'Ошибка планирования сцен');}
     const planData=await planRes.json();
     const planRaw=planData.candidates?.[0]?.content?.parts?.find(p=>!p.thought)?.text||'';
