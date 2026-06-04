@@ -638,24 +638,52 @@ function getGeminiText(data){
   return txt;
 }
 
-async function geminiCall(prompt,maxTokens){
+function parseRetryDelay(msg){
+  const m=(msg||'').match(/retry in (\d+(?:\.\d+)?)s/i);
+  return m?Math.ceil(parseFloat(m[1]))+2:62;
+}
+
+function isRateLimit(msg){
+  return (msg||'').indexOf('quota')>-1||(msg||'').indexOf('RESOURCE_EXHAUSTED')>-1||(msg||'').indexOf('rate')>-1;
+}
+
+async function countdown(sec,txtElId){
+  for(let i=sec;i>0;i--){
+    const el=document.getElementById(txtElId);
+    if(el)el.textContent='Лимит запросов — ожидаю '+i+' сек...';
+    await new Promise(function(r){setTimeout(r,1000);});
+  }
+}
+
+async function geminiCall(prompt,maxTokens,statusElId){
   if(!maxTokens)maxTokens=12000;
-  const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+S.apiKey,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      contents:[{parts:[{text:prompt}]}],
-      generationConfig:{
-        temperature:0.4,
-        maxOutputTokens:maxTokens,
-        responseMimeType:'application/json',
-        thinkingConfig:{thinkingBudget:0}
-      }
-    })
-  });
-  const data=await res.json();
-  if(!res.ok)throw new Error((data&&data.error&&data.error.message)||'HTTP '+res.status);
-  return getGeminiText(data);
+  const MAX_RETRIES=3;
+  for(let attempt=0;attempt<MAX_RETRIES;attempt++){
+    const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+S.apiKey,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        contents:[{parts:[{text:prompt}]}],
+        generationConfig:{
+          temperature:0.4,
+          maxOutputTokens:maxTokens,
+          responseMimeType:'application/json',
+          thinkingConfig:{thinkingBudget:0}
+        }
+      })
+    });
+    const data=await res.json();
+    if(res.ok)return getGeminiText(data);
+    const msg=(data&&data.error&&data.error.message)||'HTTP '+res.status;
+    if(isRateLimit(msg)&&attempt<MAX_RETRIES-1){
+      const wait=parseRetryDelay(msg);
+      await countdown(wait,statusElId||'analyzeTxt');
+      const el=document.getElementById(statusElId||'analyzeTxt');
+      if(el)el.textContent='Повторяю запрос...';
+      continue;
+    }
+    throw new Error(msg);
+  }
 }
 
 // ─── ANALYZE SCRIPT ───────────────────────────────────────────────────────
@@ -683,7 +711,7 @@ async function analyzeScript(){
   const prompt='You are a professional director and editor for science documentary video.\n\nAnalyze this script and divide it into visual scenes. Each scene = ONE visual shot, max 10 seconds.\n\n'+timingNote+'\n\nFor each scene, classify as:\n"ai" - Generate with AI image tool:\n  · Cinematic scenes with clear visual action\n  · Atmospheric shots, environments, space, creatures\n  · Any scene benefiting from photorealistic imagery\n  · Author comments say "animation", "show", "visual", "beautiful"\n\n"ae" - After Effects / Motion Graphics:\n  · Exact scale/size comparisons with numbers\n  · Infographics, timelines, diagrams, charts\n  · Data visualization with precise values\n  · Text-heavy explanations\n\n"hybrid" - AI base + After Effects overlay:\n  · Needs both cinematic imagery AND text/data on top\n\nProject context: '+styleCtx()+'\n\nReturn ONLY valid JSON:\n{"total_scenes":N,"ai_count":N,"ae_count":N,"hybrid_count":N,"scenes":[{"id":1,"excerpt":"first 8-10 words verbatim","type":"ai","reason":"one sentence","description":"what to show visually",'+timingSchema+'}]}'+'\n\nSCRIPT:\n'+script+voiceoverSection;
 
   try{
-    const raw=await geminiCall(prompt,18000);
+    const raw=await geminiCall(prompt,18000,'analyzeTxt');
     const data=safeParseJSON(raw);
     if(!data.scenes||!data.scenes.length)throw new Error('Нет сцен в ответе');
     S.shotList=data;
@@ -782,21 +810,40 @@ async function generatePrompts(){
   btn.disabled=true;btn.style.animation='blink 1s infinite';
   document.getElementById('generateError').style.display='none';
   document.getElementById('generateLoad').style.display='block';
-  document.getElementById('generateTxt').textContent='Генерирую промты для '+selected.length+' сцен...';
 
-  const scenesStr=selected.map(function(s){
-    const t=s.start_time&&s.end_time?' ['+s.start_time+'-'+s.end_time+']':'';
-    return 'Scene #'+s.id+t+' ['+s.type+']: "'+s.excerpt+'" -> '+s.description;
-  }).join('\n');
-
-  const prompt='You are an elite cinematic image prompt engineer for science documentary content.\n\nStyle guide: '+styleCtx()+'\n\nInstructions:\n- For AI and hybrid scenes: write ONE perfect cinematic image prompt in English (70-90 words). Structure: subject + action + environment + lighting + camera/composition + render quality. Always end with: "'+QUALITY_SUFFIX+'"\n- For AE scenes: write a brief motion graphic description in Russian (2-3 sentences): what to animate, what data to show, composition.\n- For hybrid scenes: write the AI prompt, then add "// AE overlay: [what After Effects adds on top]"\n\nScenes:\n'+scenesStr+'\n\nReturn ONLY valid JSON:\n{"results":[{"id":1,"type":"ai","prompt":"Cinematic wide shot...","ae_brief":null}]}';
+  const BATCH=5;
+  const styleGuide=styleCtx();
+  const instructionPrompt='You are an elite cinematic image prompt engineer for science documentary content.\n\nStyle guide: '+styleGuide+'\n\nInstructions:\n- For AI and hybrid scenes: write ONE perfect cinematic image prompt in English (70-90 words). Structure: subject + action + environment + lighting + camera/composition + render quality. Always end with: "'+QUALITY_SUFFIX+'"\n- For AE scenes: write a brief motion graphic description in Russian (2-3 sentences): what to animate, what data to show, composition.\n- For hybrid scenes: write the AI prompt, then add "// AE overlay: [what After Effects adds on top]"\n\n';
 
   try{
-    const raw=await geminiCall(prompt,18000);
-    const data=safeParseJSON(raw);
-    data.results.forEach(function(r){S.prompts[r.id]={...r,angles:[]};});
-    renderPrompts(selected);
     document.getElementById('promptSection').style.display='block';
+
+    for(let i=0;i<selected.length;i+=BATCH){
+      const batch=selected.slice(i,i+BATCH);
+      const total=selected.length;
+      const from=i+1;const to=Math.min(i+BATCH,total);
+      document.getElementById('generateTxt').textContent='Генерирую '+from+'–'+to+' из '+total+'...';
+
+      const scenesStr=batch.map(function(s){
+        const t=s.start_time&&s.end_time?' ['+s.start_time+'-'+s.end_time+']':'';
+        return 'Scene #'+s.id+t+' ['+s.type+']: "'+s.excerpt+'" -> '+s.description;
+      }).join('\n');
+
+      const prompt=instructionPrompt+'Scenes:\n'+scenesStr+'\n\nReturn ONLY valid JSON:\n{"results":[{"id":1,"type":"ai","prompt":"...","ae_brief":null}]}';
+
+      const raw=await geminiCall(prompt,6000,'generateTxt');
+      const data=safeParseJSON(raw);
+      data.results.forEach(function(r){S.prompts[r.id]=Object.assign({},r,{angles:[]});});
+      renderPrompts(batch);
+
+      if(i+BATCH<selected.length){
+        for(let c=4;c>0;c--){
+          document.getElementById('generateTxt').textContent='Пауза перед следующей группой: '+c+'с...';
+          await new Promise(function(r){setTimeout(r,1000);});
+        }
+      }
+    }
+
     setTimeout(function(){document.getElementById('promptSection').scrollIntoView({behavior:'smooth',block:'start'});},100);
   }catch(e){
     document.getElementById('generateError').textContent='Ошибка генерации: '+e.message;
