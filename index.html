@@ -984,7 +984,7 @@ async function regenPrompt(id,styleKey,customCtx){
   const prompt='You are an elite cinematic image prompt engineer for science documentary.\n\nRegenerate a prompt for this scene.\nScene description: "'+sc.description+'"\nOriginal excerpt: "'+sc.excerpt+'"\n\nStyle override: '+styleOverride+'\nBase project style: '+styleCtx()+'\n\nWrite ONE perfect cinematic image prompt in English (70-90 words). End with: "'+QUALITY_SUFFIX+'"\n\nReturn ONLY valid JSON: {"prompt":"..."}';
 
   try{
-    const raw=await geminiCall(prompt,2000);
+    const raw=await geminiCall(prompt,2000,'generateTxt');
     const data=safeParseJSON(raw);
     p.prompt=data.prompt;
     if(ptEl){ptEl.textContent=p.prompt;ptEl.style.opacity='1';}
@@ -1012,7 +1012,7 @@ async function expandAngles(id){
   const prompt='You are a cinematic image prompt engineer.\n\nOriginal prompt for scene "'+sc.description+'":\n'+p.prompt+'\n\nStyle: '+styleCtx()+'\n\nWrite 3 MORE distinctly different camera angles for the SAME scene. Do NOT repeat the original.\n1. Medium/close — focusing on a specific element\n2. Macro/extreme detail — ultra-close textures\n3. Creative/unexpected — unusual angle, silhouette, or bold perspective\n\nEach prompt must end with: "'+QUALITY_SUFFIX+'"\n\nReturn ONLY valid JSON:\n{"angles":[{"label":"СРЕДНИЙ","prompt":"..."},{"label":"МАКРО","prompt":"..."},{"label":"ТВОРЧЕСКИЙ","prompt":"..."}]}';
 
   try{
-    const raw=await geminiCall(prompt,5000);
+    const raw=await geminiCall(prompt,5000,'generateTxt');
     const data=safeParseJSON(raw);
     p.angles=data.angles;
     const wrap=document.getElementById('ang-'+id);
