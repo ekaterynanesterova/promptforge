@@ -172,15 +172,28 @@ select{font-size:11px;padding:7px 10px;width:100%}
   </div>
 
   <!-- API KEY BAR -->
-  <div class="api-bar">
-    <div class="api-left">
-      <div class="api-dot" id="apiDot"></div>
-      <span class="api-status" id="apiStatus">Gemini API не настроен — нужен для промтов и картинок</span>
+  <div class="api-bar" style="flex-direction:column;gap:8px">
+    <div style="display:flex;justify-content:space-between;align-items:center;width:100%;flex-wrap:wrap;gap:8px">
+      <div class="api-left">
+        <div class="api-dot" id="apiDot"></div>
+        <span class="api-status" id="apiStatus">Gemini API не настроен — нужен для промтов</span>
+      </div>
+      <div class="api-right" id="apiRight">
+        <input type="password" class="api-input" id="apiKeyInput" placeholder="Gemini API ключ...">
+        <button class="api-toggle" id="apiToggle">👁</button>
+        <button class="api-save-btn" id="apiSaveBtn">Сохранить</button>
+      </div>
     </div>
-    <div class="api-right" id="apiRight">
-      <input type="password" class="api-input" id="apiKeyInput" placeholder="Вставь Gemini API ключ...">
-      <button class="api-toggle" id="apiToggle">👁</button>
-      <button class="api-save-btn" id="apiSaveBtn">Сохранить</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;width:100%;flex-wrap:wrap;gap:8px">
+      <div class="api-left">
+        <div class="api-dot" id="hfDot"></div>
+        <span class="api-status" id="hfStatus">Hugging Face не настроен — нужен для картинок</span>
+      </div>
+      <div class="api-right" id="hfRight">
+        <input type="password" class="api-input" id="hfKeyInput" placeholder="HuggingFace токен (hf_...)">
+        <button class="api-toggle" id="hfToggle">👁</button>
+        <button class="api-save-btn" id="hfSaveBtn">Сохранить</button>
+      </div>
     </div>
   </div>
 
@@ -303,7 +316,8 @@ const STATE = {
   globalRefData: null, globalRefDesc: '', sceneRefData: null, sceneRefDesc: '',
   results: null, history: [], expanded: null,
   generatingImg: {}, generatedImgs: {}, imgErrors: {},
-  imgModel: 'flux'
+  imgModel: 'black-forest-labs/FLUX.1-schnell',
+  hfKey: '', hfKeySaved: false
 };
 
 // ─── PRESETS ──────────────────────────────────────────────────────────────
@@ -411,8 +425,8 @@ function updateSummary(){
   const wc=document.getElementById('projectText').value.trim().split(/\s+/).filter(Boolean).length;
   document.getElementById('sumScript').textContent=wc>0?wc+' слов':'не загружен';
   const sa=document.getElementById('sumApi');
-  if(STATE.apiKey){sa.textContent='✓ Nano Banana 2';sa.className='summary-val ok';}
-  else{sa.textContent='нет ключа';sa.className='summary-val warn';}
+  if(STATE.hfKey){sa.textContent='✓ Hugging Face';sa.className='summary-val ok';}
+  else{sa.textContent='нет HF ключа';sa.className='summary-val warn';}
 }
 
 function updateWordCount(){
@@ -459,6 +473,38 @@ function resetApiKey(){
     document.getElementById('apiToggle').textContent=STATE.showKey?'🙈':'👁';
   };
   document.getElementById('apiKeyInput').addEventListener('keydown',e=>{if(e.key==='Enter')saveApiKey();});
+  updateSummary();
+}
+
+// ─── HF KEY ───────────────────────────────────────────────────────────────
+document.getElementById('hfToggle').onclick=()=>{
+  const inp=document.getElementById('hfKeyInput');
+  if(inp){inp.type=inp.type==='password'?'text':'password';document.getElementById('hfToggle').textContent=inp.type==='text'?'🙈':'👁';}
+};
+document.getElementById('hfSaveBtn').onclick=saveHfKey;
+document.getElementById('hfKeyInput').addEventListener('keydown',e=>{if(e.key==='Enter')saveHfKey();});
+
+function saveHfKey(){
+  const v=document.getElementById('hfKeyInput').value.trim();
+  if(v.length<10) return;
+  STATE.hfKey=v; STATE.hfKeySaved=true;
+  document.getElementById('hfDot').classList.add('connected');
+  document.getElementById('hfStatus').textContent='Hugging Face подключён';
+  document.getElementById('hfRight').innerHTML=`<span class="api-masked">${'•'.repeat(12)} ${v.slice(-6)}</span><button class="api-change-btn" onclick="resetHfKey()">Изменить</button>`;
+  updateSummary();
+}
+
+function resetHfKey(){
+  STATE.hfKey=''; STATE.hfKeySaved=false;
+  document.getElementById('hfDot').classList.remove('connected');
+  document.getElementById('hfStatus').textContent='Hugging Face не настроен — нужен для картинок';
+  document.getElementById('hfRight').innerHTML=`<input type="password" class="api-input" id="hfKeyInput" placeholder="HuggingFace токен (hf_...)"><button class="api-toggle" id="hfToggle">👁</button><button class="api-save-btn" id="hfSaveBtn">Сохранить</button>`;
+  document.getElementById('hfSaveBtn').onclick=saveHfKey;
+  document.getElementById('hfToggle').onclick=()=>{
+    const inp=document.getElementById('hfKeyInput');
+    if(inp){inp.type=inp.type==='password'?'text':'password';document.getElementById('hfToggle').textContent=inp.type==='text'?'🙈':'👁';}
+  };
+  document.getElementById('hfKeyInput').addEventListener('keydown',e=>{if(e.key==='Enter')saveHfKey();});
   updateSummary();
 }
 
@@ -624,7 +670,7 @@ function renderResults(data){
   const header=document.createElement('div'); header.className='res-head';
   const sc=data.scene_count;
   const label=sc===1?'СЦЕНА':sc<5?'СЦЕНЫ':'СЦЕН';
-  header.innerHTML=`<span class="res-label">${sc} ${label} · ${sc*4} ПРОМТОВ</span><div style="display:flex;gap:8px;align-items:center"><select id="imgModelSelect" style="font-size:9px;padding:4px 8px;background:rgba(5,12,30,0.9);border:1px solid rgba(60,120,255,0.2);color:rgba(90,150,255,0.7);border-radius:2px" onchange="STATE.imgModel=this.value"><option value="flux" selected>flux</option><option value="flux-realism">flux-realism</option><option value="turbo">turbo (быстрее)</option></select><button class="ghost-btn" onclick="copyAll()">Копировать всё</button></div>`;
+  header.innerHTML=`<span class="res-label">${sc} ${label} · ${sc*4} ПРОМТОВ</span><div style="display:flex;gap:8px;align-items:center"><select id="imgModelSelect" style="font-size:9px;padding:4px 8px;background:rgba(5,12,30,0.9);border:1px solid rgba(60,120,255,0.2);color:rgba(90,150,255,0.7);border-radius:2px" onchange="STATE.imgModel=this.value"><option value="black-forest-labs/FLUX.1-schnell" selected>FLUX.1-schnell (быстрый)</option><option value="black-forest-labs/FLUX.1-dev">FLUX.1-dev (качество)</option><option value="stabilityai/stable-diffusion-xl-base-1.0">SD XL</option></select><button class="ghost-btn" onclick="copyAll()">Копировать всё</button></div>`;
   container.appendChild(header);
 
   data.scenes.forEach((scene,si)=>{
@@ -667,7 +713,7 @@ function renderResults(data){
           <span class="angle-label" style="color:${c.color}">${angle.label}</span>
           <div class="angle-btns">
             <button class="mini-btn" id="cpbtn-${key}" onclick="copyText('${key}',\`${angle.prompt.replace(/`/g,"'")}\`)">Копировать</button>
-            ${STATE.apiKey?`<button class="mini-btn gen" id="genbtn-${key}" onclick="generateImage('${key}',\`${angle.prompt.replace(/`/g,"'")}\`)">🖼 Создать</button>`:''}
+            ${STATE.hfKey?`<button class="mini-btn gen" id="genbtn-${key}" onclick="generateImage('${key}',\`${angle.prompt.replace(/`/g,"'")}\`)">🖼 Создать</button>`:''}
           </div>
         </div>
         <p class="angle-prompt">${angle.prompt}</p>
@@ -686,17 +732,23 @@ function renderResults(data){
 
 // ─── GENERATE IMAGE ───────────────────────────────────────────────────────
 async function generateImage(key, prompt){
+  if(!STATE.hfKey){
+    const slot=document.getElementById('img-'+key);
+    if(slot) slot.innerHTML='<div class="img-err">⚠ Нужен Hugging Face токен</div>';
+    return;
+  }
   const btn=document.getElementById('genbtn-'+key);
   if(btn){btn.disabled=true;btn.innerHTML='<span>⟳</span>';btn.classList.add('spinning');}
   document.getElementById('img-'+key).innerHTML='';
 
-  const model=STATE.imgModel||'flux-cinematic';
-  const seed=Math.floor(Math.random()*999999);
-  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?model=${model}&width=1280&height=720&nologo=true&seed=${seed}`;
-
+  const model=STATE.imgModel||'black-forest-labs/FLUX.1-schnell';
   try{
-    const res=await fetch(url);
-    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const res=await fetch(`https://api-inference.huggingface.co/models/${model}`,{
+      method:'POST',
+      headers:{'Authorization':`Bearer ${STATE.hfKey}`,'Content-Type':'application/json'},
+      body:JSON.stringify({inputs:prompt})
+    });
+    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error||`HTTP ${res.status}`);}
     const blob=await res.blob();
     const objUrl=URL.createObjectURL(blob);
     STATE.generatedImgs[key]=objUrl;
