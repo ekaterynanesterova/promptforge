@@ -64,16 +64,29 @@ canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:n
 .style-input{width:100%;font-size:11px;padding:8px 12px}
 .type-custom{width:100%;font-size:11px;padding:8px 12px;margin-bottom:14px}
 
-.drop-zone{border:1px dashed rgba(60,120,255,0.2);border-radius:3px;padding:26px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;background:rgba(60,120,255,0.02);transition:all 0.2s;margin-bottom:12px}
+/* Script slots */
+.slot-label{display:flex;align-items:center;gap:8px;margin-bottom:7px;margin-top:4px}
+.slot-lbl-txt{font-size:9px;letter-spacing:2px;color:rgba(90,150,255,0.45);text-transform:uppercase}
+.slot-tag{font-size:8px;letter-spacing:1px;padding:2px 7px;border-radius:8px;background:rgba(74,158,255,0.08);border:1px solid rgba(74,158,255,0.15);color:rgba(74,158,255,0.45)}
+.slot-tag.opt{background:rgba(60,120,255,0.04);border-color:rgba(60,120,255,0.1);color:rgba(90,150,255,0.3)}
+
+.drop-zone{border:1px dashed rgba(60,120,255,0.2);border-radius:3px;padding:20px 26px;display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;background:rgba(60,120,255,0.02);transition:all 0.2s;margin-bottom:10px}
 .drop-zone:hover,.drop-zone.drag{border-color:rgba(74,158,255,0.4);background:rgba(74,158,255,0.04)}
-.drop-icon{font-size:26px;opacity:0.4}
+.drop-icon{font-size:24px;opacity:0.4}
 .drop-text{font-size:11px;color:rgba(90,150,255,0.5);letter-spacing:1px}
 .drop-sub{font-size:9px;color:rgba(90,150,255,0.3);letter-spacing:1px}
-.or-div{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.or-div{display:flex;align-items:center;gap:12px;margin-bottom:10px}
 .or-div::before,.or-div::after{content:'';flex:1;height:1px;background:rgba(60,120,255,0.1)}
 .or-div span{font-size:9px;color:rgba(90,150,255,0.3);letter-spacing:2px}
-.word-row{display:flex;justify-content:space-between;margin-top:8px;margin-bottom:14px}
+.word-row{display:flex;justify-content:space-between;margin-top:7px;margin-bottom:8px}
 .dim{font-size:9px;color:rgba(90,150,255,0.3);letter-spacing:1px}
+.script-divider{height:1px;background:rgba(60,120,255,0.08);margin:16px 0}
+
+.duration-row{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(60,120,255,0.08)}
+.dur-lbl{font-size:9px;letter-spacing:2px;color:rgba(90,150,255,0.45);white-space:nowrap}
+.dur-input{width:74px;font-size:13px;padding:6px 10px;text-align:center;letter-spacing:2px;color:#8ab0d0}
+.dur-hint{font-size:9px;color:rgba(90,150,255,0.28);letter-spacing:1px}
+.dur-words{font-size:9px;color:rgba(74,158,255,0.5);letter-spacing:1px;margin-left:auto}
 
 .btn-primary{width:100%;background:linear-gradient(135deg,#142e66,#0a1a3e);border:1px solid rgba(70,130,255,0.3);color:#5090e0;font-size:11px;letter-spacing:4px;padding:14px;border-radius:2px}
 .btn-primary:disabled{opacity:0.35;cursor:not-allowed}
@@ -110,13 +123,14 @@ canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:n
 .scene-card.selected.hybrid{border-color:rgba(160,100,255,0.5);background:rgba(160,100,255,0.07)}
 .sc-check{width:15px;height:15px;border-radius:2px;border:1px solid rgba(60,120,255,0.22);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:3px;font-size:9px;color:#4a9eff}
 .sc-body{flex:1;min-width:0}
-.sc-meta{display:flex;gap:7px;align-items:center;margin-bottom:4px}
+.sc-meta{display:flex;gap:7px;align-items:center;margin-bottom:4px;flex-wrap:wrap}
 .badge{font-size:7px;letter-spacing:2px;padding:2px 7px;border-radius:8px;font-weight:bold;text-transform:uppercase}
 .badge.ai{background:rgba(74,158,255,0.15);color:rgba(74,158,255,0.95)}
 .badge.ae{background:rgba(255,160,80,0.15);color:rgba(255,160,80,0.95)}
 .badge.hybrid{background:rgba(160,100,255,0.15);color:rgba(160,100,255,0.95)}
 .sc-num{font-size:9px;color:rgba(90,150,255,0.4);letter-spacing:1px}
 .sc-dur{font-size:9px;color:rgba(90,150,255,0.28)}
+.sc-time{font-size:9px;color:rgba(74,158,255,0.45);letter-spacing:1px;font-weight:bold}
 .sc-exc{font-size:11px;color:#8ab0d0;line-height:1.6;margin-bottom:3px;font-family:'Georgia',serif}
 .sc-reason{font-size:9px;color:rgba(90,150,255,0.33);line-height:1.4}
 
@@ -126,16 +140,28 @@ canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:n
 .prompt-card.hybrid{border:1px solid rgba(160,100,255,0.15)}
 .pc-head{display:flex;align-items:center;gap:10px;padding:11px 14px;background:rgba(0,0,0,0.18)}
 .pc-info{flex:1;min-width:0}
-.pc-btns{display:flex;gap:6px;flex-shrink:0}
+.pc-btns{display:flex;gap:6px;flex-shrink:0;align-items:center;flex-wrap:wrap;justify-content:flex-end}
 .pc-exc{font-size:10px;color:rgba(90,150,255,0.38);margin-top:2px;font-family:'Georgia',serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pc-body{padding:13px 14px;border-top:1px solid rgba(60,120,255,0.06)}
-.pc-prompt{font-size:12px;color:#9ac0e0;line-height:1.9;font-family:'Georgia',serif}
+.pc-prompt{font-size:12px;color:#9ac0e0;line-height:1.9;font-family:'Georgia',serif;transition:opacity 0.2s}
 .pc-ae{font-size:11px;color:rgba(255,185,110,0.75);line-height:1.8}
 .angles-wrap{border-top:1px solid rgba(60,120,255,0.06);padding:10px 14px;display:flex;flex-direction:column;gap:8px}
 .angle-item{padding:10px 12px;background:rgba(0,0,0,0.15);border-radius:2px;border-left:2px solid rgba(74,158,255,0.18)}
 .angle-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
 .angle-lbl{font-size:8px;letter-spacing:2px;color:rgba(74,158,255,0.5);text-transform:uppercase}
 .angle-txt{font-size:11px;color:#8ab0d0;line-height:1.8;font-family:'Georgia',serif}
+
+/* Regen dropdown */
+.regen-wrap{position:relative;display:inline-block}
+.btn-regen{background:rgba(60,120,255,0.06);border:1px solid rgba(74,158,255,0.18);color:rgba(100,170,255,0.6);font-size:8px;letter-spacing:1px;padding:4px 10px;border-radius:2px;white-space:nowrap}
+.btn-regen:hover{border-color:rgba(74,158,255,0.35);color:rgba(120,190,255,0.8)}
+.regen-menu{position:absolute;right:0;top:calc(100% + 4px);width:240px;background:#060f24;border:1px solid rgba(60,120,255,0.2);border-radius:3px;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,0.6);overflow:hidden;animation:fadeUp 0.15s ease}
+.regen-sect{font-size:8px;letter-spacing:2px;color:rgba(74,158,255,0.35);padding:8px 12px 4px;background:rgba(0,0,0,0.2);text-transform:uppercase}
+.regen-opt{display:block;width:100%;text-align:left;background:transparent;border:none;color:rgba(120,170,230,0.65);font-size:10px;letter-spacing:0.5px;padding:7px 14px;cursor:pointer;transition:background 0.1s}
+.regen-opt:hover{background:rgba(74,158,255,0.08);color:#a0c8f0}
+.regen-custom-row{display:flex;gap:6px;padding:8px 10px;border-top:1px solid rgba(60,120,255,0.1);background:rgba(0,0,0,0.15)}
+.regen-custom-input{flex:1;font-size:10px;padding:5px 8px;border-radius:2px}
+.regen-custom-btn{background:rgba(74,158,255,0.1);border:1px solid rgba(74,158,255,0.2);color:rgba(74,158,255,0.7);font-size:10px;padding:5px 9px;border-radius:2px}
 
 .export-bar{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
 
@@ -144,6 +170,7 @@ canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:n
   .api-input{width:160px}
   .tone-row{gap:8px}
   .tone-val{min-width:80px;font-size:8px}
+  .pc-btns{gap:4px}
 }
 </style>
 </head>
@@ -163,7 +190,7 @@ canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:n
   </div>
   <div class="api-right" id="apiRight">
     <input type="password" class="api-input" id="apiKeyInput" placeholder="Gemini API ключ...">
-    <button class="api-toggle" id="apiToggle">👁</button>
+    <button class="api-toggle" id="apiToggle">&#128065;</button>
     <button class="api-save" id="apiSaveBtn">Сохранить</button>
   </div>
 </div>
@@ -175,10 +202,10 @@ canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:n
     <div class="type-grid" id="typeGrid"></div>
     <input class="type-custom" id="typeCustom" placeholder="Опиши тип контента..." style="display:none">
     <div class="tone-row">
-      <span class="tone-lbl">🎬 Эпичный</span>
+      <span class="tone-lbl">&#127916; Эпичный</span>
       <input type="range" class="tone-slider" id="toneSlider" min="0" max="100" value="35">
       <span class="tone-val" id="toneVal">Кинематографичный</span>
-      <span class="tone-lbl">📚 Образовательный</span>
+      <span class="tone-lbl">&#128218; Образовательный</span>
     </div>
     <div class="style-chips" id="styleChips"></div>
     <input class="style-input" id="styleNotes" placeholder="Или введи своё...">
@@ -188,24 +215,56 @@ canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:n
 <!-- STEP 2 -->
 <div class="section">
   <div class="sec-head"><div class="step-num">2</div><span class="sec-title">Сценарий</span></div>
+
+  <div class="slot-label">
+    <span class="slot-lbl-txt">Основной сценарий</span>
+    <span class="slot-tag">с комментариями автора</span>
+  </div>
   <div class="drop-zone" id="dropZone" onclick="document.getElementById('docxInput').click()">
-    <span class="drop-icon">📄</span>
+    <span class="drop-icon">&#128196;</span>
     <span class="drop-text">Перетащи .docx или кликни для загрузки</span>
     <span class="drop-sub">Word документ · текст + комментарии автора</span>
   </div>
   <input type="file" id="docxInput" accept=".docx" style="display:none">
   <div class="or-div"><span>ИЛИ ВСТАВЬ ТЕКСТ</span></div>
-  <textarea id="scriptText" rows="9" placeholder="Вставь текст сценария..."></textarea>
+  <textarea id="scriptText" rows="7" placeholder="Вставь текст сценария..."></textarea>
   <div class="word-row">
     <span class="dim" id="wordCount">0 слов</span>
     <button class="btn-ghost" onclick="document.getElementById('scriptText').value='';updateWordCount()">Очистить</button>
   </div>
-  <div class="error-box" id="analyzeError" style="display:none"></div>
+
+  <div class="script-divider"></div>
+
+  <div class="slot-label">
+    <span class="slot-lbl-txt">Текст озвучки</span>
+    <span class="slot-tag opt">опционально · для точного тайминга</span>
+  </div>
+  <div class="drop-zone" id="dropZoneVO" onclick="document.getElementById('docxInputVO').click()">
+    <span class="drop-icon">&#128266;</span>
+    <span class="drop-text">Перетащи .docx / .txt или кликни</span>
+    <span class="drop-sub">английский текст по которому будет озвучка</span>
+  </div>
+  <input type="file" id="docxInputVO" accept=".docx,.txt" style="display:none">
+  <div class="or-div"><span>ИЛИ ВСТАВЬ ТЕКСТ</span></div>
+  <textarea id="voiceoverText" rows="4" placeholder="Вставь английский текст озвучки..."></textarea>
+  <div class="word-row">
+    <span class="dim" id="wordCountVO">0 слов</span>
+    <button class="btn-ghost" onclick="document.getElementById('voiceoverText').value='';updateWordCountVO()">Очистить</button>
+  </div>
+
+  <div class="duration-row">
+    <span class="dur-lbl">&#127909; Длительность видео</span>
+    <input type="text" class="dur-input" id="durationInput" placeholder="20:15" maxlength="6">
+    <span class="dur-hint">мин : сек</span>
+    <span class="dur-words" id="durCalc"></span>
+  </div>
+
+  <div class="error-box" id="analyzeError" style="display:none;margin-top:12px"></div>
   <div class="load-wrap" id="analyzeLoad" style="display:none">
     <div class="load-bar"><div class="load-fill"></div></div>
     <p class="load-txt" id="analyzeTxt">Анализирую сценарий...</p>
   </div>
-  <button class="btn-primary" id="analyzeBtn" onclick="analyzeScript()">АНАЛИЗИРОВАТЬ СЦЕНАРИЙ</button>
+  <button class="btn-primary" id="analyzeBtn" onclick="analyzeScript()" style="margin-top:14px">АНАЛИЗИРОВАТЬ СЦЕНАРИЙ</button>
 </div>
 
 <!-- STEP 3 -->
@@ -238,24 +297,72 @@ const S={
   apiKey:'',apiSaved:false,showKey:false,
   projectType:'space',projectTypeCustom:'',
   tone:35,styleNotes:'',
+  voiceoverText:'',videoDurationSec:0,
   shotList:null,selectedIds:new Set(),
   prompts:{}
 };
 
 const TYPES={
-  space:     {icon:'🌌',label:'Космос',       ctx:'Space exploration, astrophysics, astronomy. NASA/ESA science documentary aesthetic.'},
-  prehistoric:{icon:'🦕',label:'Доисторическое',ctx:'Prehistoric life, paleontology, ancient Earth. BBC Prehistoric Planet cinematic style.'},
-  earth:     {icon:'🌍',label:'Земля / Природа',ctx:'Earth science, geology, nature. National Geographic / BBC Earth documentary.'},
-  other:     {icon:'✏️',label:'Другое',        ctx:''}
+  space:     {icon:'&#127756;',label:'Космос',        ctx:'Space exploration, astrophysics, astronomy. NASA/ESA science documentary aesthetic.'},
+  prehistoric:{icon:'&#129429;',label:'Доисторическое',ctx:'Prehistoric life, paleontology, ancient Earth. BBC Prehistoric Planet cinematic style.'},
+  earth:     {icon:'&#127757;',label:'Земля / Природа',ctx:'Earth science, geology, nature. National Geographic / BBC Earth documentary.'},
+  other:     {icon:'&#9999;&#65039;',label:'Другое',  ctx:''}
 };
 
+const REGEN_STYLES=[
+  {cat:'АТМОСФЕРА',     key:'epic',        lbl:'Эпичный / кинематографичный',     ctx:'Epic, cinematic, dramatic lighting, grand scale, moody atmosphere, IMAX quality'},
+  {cat:'АТМОСФЕРА',     key:'dark',        lbl:'Мрачный / тревожный',             ctx:'Dark, ominous, tense atmosphere, deep shadows, dramatic contrast, foreboding'},
+  {cat:'АТМОСФЕРА',     key:'majestic',    lbl:'Величественный / торжественный',  ctx:'Majestic, awe-inspiring, solemn, golden hour lighting, cathedral-like scale'},
+  {cat:'АТМОСФЕРА',     key:'scientific',  lbl:'Холодный / научный',              ctx:'Cold scientific precision, clean sterile lighting, clinical, analytical'},
+  {cat:'АТМОСФЕРА',     key:'warm',        lbl:'Тёплый / живой',                  ctx:'Warm inviting tones, golden amber light, life-affirming, vibrant, energetic'},
+  {cat:'ТЕХНИКА',       key:'handheld',    lbl:'Документальный (ручная камера)',   ctx:'Handheld documentary style, slight camera movement, naturalistic, verite'},
+  {cat:'ТЕХНИКА',       key:'imax',        lbl:'IMAX / стабилизированная камера', ctx:'Locked-off IMAX shot, ultra-stable, maximum sharpness, pristine optics, sweeping vista'},
+  {cat:'ТЕХНИКА',       key:'drone',       lbl:'Drone shot / вид сверху',         ctx:'Aerial drone perspective, bird\'s eye view, sweeping overhead angle, vast landscape below'},
+  {cat:'ТЕХНИКА',       key:'timelapse',   lbl:'Timelapse / long exposure',       ctx:'Long exposure photography, star trails, time compression, light streaks, motion blur suggesting time'},
+  {cat:'СТИЛЬ',         key:'photorealism',lbl:'Фотореализм (NASA aesthetic)',    ctx:'NASA/ESA photorealistic visualization, scientifically accurate, space telescope aesthetic'},
+  {cat:'СТИЛЬ',         key:'painterly',   lbl:'Artistic / painterly',            ctx:'Artistic painterly style, expressive brushwork, impressionistic quality, fine art museum-worthy'},
+  {cat:'СТИЛЬ',         key:'minimal',     lbl:'Минималистичный',                 ctx:'Minimalist composition, clean negative space, single subject focus, sparse elegant framing'},
+  {cat:'СТИЛЬ',         key:'graphic',     lbl:'Graphic novel / illustrated',     ctx:'Graphic novel aesthetic, bold illustration, high contrast ink, comic-inspired artistry'},
+  {cat:'РЕНДЕР',        key:'ultra',       lbl:'Ultra (8K, ray-traced, HDR)',     ctx:'8K ultra resolution, ray-traced rendering, HDR, volumetric god rays, physically based rendering, Unreal Engine 5'},
+  {cat:'РЕНДЕР',        key:'cinematic4k', lbl:'Cinematic (4K, film grain)',      ctx:'4K cinematic, subtle 35mm film grain, anamorphic lens flare, cinema-grade color grade'},
+  {cat:'РЕНДЕР',        key:'stylized',    lbl:'Stylized (без фотореализма)',     ctx:'Stylized non-photorealistic, artistic rendering, exaggerated beautiful forms, fantasy aesthetic'},
+];
+
+const QUALITY_SUFFIX='8K ultra resolution, photorealistic, volumetric lighting, ray-traced, ultra-sharp focus, HDR, cinema-grade color grading, science documentary.';
+
 function getToneLbl(v){return v<20?'Очень эпичный':v<40?'Кинематографичный':v<60?'Сбалансированный':v<80?'Образовательный':'Очень ясный';}
-function getToneCtx(v){return v<25?'Dramatic, cinematic, moody, atmospheric, epic scale':v<50?'Cinematic documentary, epic but clear, dramatic lighting':v<75?'Balanced science documentary, engaging and clear':'Educational, bright, clean composition, accessible, informative';}
+function getToneCtx(v){return v<25?'Dramatic, cinematic, moody, atmospheric, epic scale':v<50?'Cinematic documentary, epic but clear, dramatic lighting':v<75?'Balanced science documentary, engaging and clear':'Educational, bright, clean composition, accessible';}
 
 function styleCtx(){
   const pt=TYPES[S.projectType];
   const ctx=S.projectType==='other'?S.projectTypeCustom:pt.ctx;
-  return `${ctx} Tone: ${getToneCtx(S.tone)}.${S.styleNotes?' '+S.styleNotes:''}`;
+  return ctx+' Tone: '+getToneCtx(S.tone)+'.'+(S.styleNotes?' '+S.styleNotes:'');
+}
+
+function parseDuration(str){
+  if(!str)return 0;
+  const p=str.trim().split(':');
+  if(p.length===2){const m=parseInt(p[0],10),s=parseInt(p[1],10);if(!isNaN(m)&&!isNaN(s))return m*60+s;}
+  const n=parseInt(str,10);return isNaN(n)?0:n;
+}
+
+function fmtTime(sec){const m=Math.floor(sec/60),s=Math.round(sec%60);return m+':'+(s<10?'0':'')+s;}
+
+function calcTiming(){
+  const voText=S.voiceoverText||document.getElementById('scriptText').value;
+  const words=voText.trim().split(/\s+/).filter(Boolean).length;
+  const dur=S.videoDurationSec;
+  if(!dur||!words)return null;
+  return {totalWords:words,totalSecs:dur,secPerWord:dur/words};
+}
+
+function updateDurCalc(){
+  const t=calcTiming();
+  const el=document.getElementById('durCalc');
+  if(!el)return;
+  if(!t){el.textContent='';return;}
+  const wordsPerScene=Math.round(t.secPerWord>0?8/t.secPerWord:30);
+  el.textContent='~'+wordsPerScene+' слов/кадр · '+Math.round(t.totalSecs/8)+' кадров';
 }
 
 // ─── STARS ────────────────────────────────────────────────────────────────
@@ -264,11 +371,11 @@ function styleCtx(){
   const st=Array.from({length:80},()=>({x:Math.random(),y:Math.random(),r:Math.random()*1.1+0.3,op:Math.random()*0.5+0.1,sp:Math.random()*0.02+0.01,t:Math.random()*Math.PI*2}));
   function resize(){c.width=innerWidth;c.height=innerHeight;}
   resize();window.addEventListener('resize',resize);
-  (function draw(){ctx.clearRect(0,0,c.width,c.height);const now=Date.now()/1000;st.forEach(s=>{const op=s.op*(0.3+0.7*Math.abs(Math.sin(now*s.sp+s.t)));ctx.beginPath();ctx.arc(s.x*c.width,s.y*c.height,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${op})`;ctx.fill();});requestAnimationFrame(draw);})();
+  (function draw(){ctx.clearRect(0,0,c.width,c.height);const now=Date.now()/1000;st.forEach(s=>{const op=s.op*(0.3+0.7*Math.abs(Math.sin(now*s.sp+s.t)));ctx.beginPath();ctx.arc(s.x*c.width,s.y*c.height,s.r,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,'+op+')';ctx.fill();});requestAnimationFrame(draw);})();
 })();
 
 // ─── API KEY ──────────────────────────────────────────────────────────────
-document.getElementById('apiToggle').onclick=()=>{S.showKey=!S.showKey;document.getElementById('apiKeyInput').type=S.showKey?'text':'password';document.getElementById('apiToggle').textContent=S.showKey?'🙈':'👁';};
+document.getElementById('apiToggle').onclick=()=>{S.showKey=!S.showKey;document.getElementById('apiKeyInput').type=S.showKey?'text':'password';document.getElementById('apiToggle').textContent=S.showKey?'&#128584;':'&#128065;';};
 document.getElementById('apiSaveBtn').onclick=saveKey;
 document.getElementById('apiKeyInput').addEventListener('keydown',e=>{if(e.key==='Enter')saveKey();});
 
@@ -278,15 +385,15 @@ function saveKey(){
   S.apiKey=v;S.apiSaved=true;
   document.getElementById('apiDot').classList.add('on');
   document.getElementById('apiStatus').textContent='Gemini API подключён';
-  document.getElementById('apiRight').innerHTML=`<span class="api-masked">${'•'.repeat(12)} ${v.slice(-6)}</span><button class="api-change" onclick="resetKey()">Изменить</button>`;
+  document.getElementById('apiRight').innerHTML='<span class="api-masked">'+('•'.repeat(12))+' '+v.slice(-6)+'</span><button class="api-change" onclick="resetKey()">Изменить</button>';
 }
 function resetKey(){
   S.apiKey='';S.apiSaved=false;
   document.getElementById('apiDot').classList.remove('on');
   document.getElementById('apiStatus').textContent='Gemini API не настроен';
-  document.getElementById('apiRight').innerHTML=`<input type="password" class="api-input" id="apiKeyInput" placeholder="Gemini API ключ..."><button class="api-toggle" id="apiToggle">👁</button><button class="api-save" id="apiSaveBtn">Сохранить</button>`;
+  document.getElementById('apiRight').innerHTML='<input type="password" class="api-input" id="apiKeyInput" placeholder="Gemini API ключ..."><button class="api-toggle" id="apiToggle">&#128065;</button><button class="api-save" id="apiSaveBtn">Сохранить</button>';
   document.getElementById('apiSaveBtn').onclick=saveKey;
-  document.getElementById('apiToggle').onclick=()=>{S.showKey=!S.showKey;document.getElementById('apiKeyInput').type=S.showKey?'text':'password';document.getElementById('apiToggle').textContent=S.showKey?'🙈':'👁';};
+  document.getElementById('apiToggle').onclick=()=>{S.showKey=!S.showKey;document.getElementById('apiKeyInput').type=S.showKey?'text':'password';document.getElementById('apiToggle').textContent=S.showKey?'&#128584;':'&#128065;';};
   document.getElementById('apiKeyInput').addEventListener('keydown',e=>{if(e.key==='Enter')saveKey();});
 }
 
@@ -296,7 +403,7 @@ function initTypes(){
   Object.entries(TYPES).forEach(([id,t])=>{
     const b=document.createElement('button');
     b.className='type-btn'+(id===S.projectType?' active':'');
-    b.innerHTML=`<span class="type-icon">${t.icon}</span>${t.label}`;
+    b.innerHTML='<span class="type-icon">'+t.icon+'</span>'+t.label;
     b.onclick=()=>{
       S.projectType=id;
       document.querySelectorAll('.type-btn').forEach(x=>x.classList.remove('active'));
@@ -310,29 +417,29 @@ document.getElementById('typeCustom').oninput=e=>S.projectTypeCustom=e.target.va
 document.getElementById('styleNotes').oninput=e=>S.styleNotes=e.target.value;
 
 const STYLE_CHIPS=[
-  {label:'BBC Earth',            tip:'Яркие насыщенные цвета, живая природа, фотографическая точность. Один из лучших документальных стилей.'},
-  {label:'BBC Documentary',      tip:'Строгий документальный стиль BBC: серьёзный, информативный, высокое качество изображения.'},
-  {label:'National Geographic',  tip:'NatGeo: насыщенные цвета, золотой «журнальный» свет, тёплая атмосфера, журнальная эстетика.'},
-  {label:'Prehistoric Planet',   tip:'Apple TV+: фотореализм динозавров, мягкое кино-освещение, как будто снято настоящей камерой.'},
-  {label:'Cosmos',               tip:'Cosmos NdGT: грандиозный масштаб вселенной, поэтичный и научный одновременно, звёздные пейзажи.'},
-  {label:'How the Universe Works',tip:'Discovery: тёмный космос, взрывы и катастрофы, объяснительный стиль, драматичные цвета.'},
-  {label:'IMAX',                 tip:'IMAX: максимальная детализация, сверхширокий кадр, подавляющий масштаб, идеально для космоса.'},
-  {label:'NASA Visualization',   tip:'NASA: научная точность, реалистичные космические сцены, официальный визуализационный стиль.'},
-  {label:'Planet Earth III',     tip:'BBC Planet Earth III: ультра HD природа, современная документалистика, кинематографичная дикая природа.'},
-  {label:'Nova PBS',             tip:'PBS Nova: образовательный и точный, умеренно кинематографичный, подходит для объяснений.'},
-  {label:'Яркие цвета',          tip:'Насыщенная палитра, избегать тёмных и мрачных тонов, живые оттенки.'},
-  {label:'Не слишком мрачно',    tip:'Сбалансированное освещение, избегать чрезмерно тёмных сцен, средний уровень контраста.'},
-  {label:'Минималистичный',      tip:'Чистая композиция, мало элементов в кадре, акцент на главном объекте.'},
-  {label:'Тёплые тона',          tip:'Золотистые, янтарные, оранжевые оттенки; атмосферное тёплое закатное освещение.'},
+  {label:'BBC Earth',            tip:'Яркие насыщенные цвета, живая природа, фотографическая точность.'},
+  {label:'BBC Documentary',      tip:'Строгий документальный стиль BBC: серьёзный, информативный, высокое качество.'},
+  {label:'National Geographic',  tip:'NatGeo: насыщенные цвета, золотой журнальный свет, тёплая атмосфера.'},
+  {label:'Prehistoric Planet',   tip:'Apple TV+: фотореализм, мягкое кино-освещение, как будто снято настоящей камерой.'},
+  {label:'Cosmos',               tip:'Грандиозный масштаб вселенной, поэтичный и научный, звёздные пейзажи.'},
+  {label:'How the Universe Works',tip:'Discovery: тёмный космос, взрывы, драматичные цвета, объяснительный стиль.'},
+  {label:'IMAX',                 tip:'Максимальная детализация, сверхширокий кадр, подавляющий масштаб.'},
+  {label:'NASA Visualization',   tip:'Научная точность, реалистичные космические сцены, официальный NASA стиль.'},
+  {label:'Planet Earth III',     tip:'BBC ультра HD природа, современная документалистика, кинематографичная дикая природа.'},
+  {label:'Nova PBS',             tip:'PBS: образовательный и точный, умеренно кинематографичный.'},
+  {label:'Яркие цвета',          tip:'Насыщенная палитра, живые оттенки, избегать тёмных тонов.'},
+  {label:'Не слишком мрачно',    tip:'Сбалансированное освещение, средний уровень контраста.'},
+  {label:'Минималистичный',      tip:'Чистая композиция, мало элементов, акцент на главном объекте.'},
+  {label:'Тёплые тона',          tip:'Золотистые, янтарные, оранжевые оттенки; тёплое закатное освещение.'},
   {label:'Холодные тона',        tip:'Синие, стальные, ледяные тона; холодное или космическое освещение.'},
 ];
 
 function initStyleChips(){
   const wrap=document.getElementById('styleChips');
-  STYLE_CHIPS.forEach(({label,tip})=>{
+  STYLE_CHIPS.forEach(function(ch){
     const chip=document.createElement('button');
-    chip.className='style-chip';chip.type='button';chip.textContent=label;chip.title=tip;
-    chip.onclick=()=>{
+    chip.className='style-chip';chip.type='button';chip.textContent=ch.label;chip.title=ch.tip;
+    chip.onclick=function(){
       chip.classList.toggle('active');
       const active=[...document.querySelectorAll('.style-chip.active')].map(c=>c.textContent);
       const custom=document.getElementById('styleNotes').value.replace(/^[^·]+·?\s*/,'').trim();
@@ -345,19 +452,25 @@ function initStyleChips(){
 
 // ─── TONE ─────────────────────────────────────────────────────────────────
 const toneSlider=document.getElementById('toneSlider');
-toneSlider.oninput=()=>{S.tone=+toneSlider.value;document.getElementById('toneVal').textContent=getToneLbl(S.tone);};
+toneSlider.oninput=function(){S.tone=+toneSlider.value;document.getElementById('toneVal').textContent=getToneLbl(S.tone);};
 
 // ─── SCRIPT ───────────────────────────────────────────────────────────────
 document.getElementById('scriptText').oninput=updateWordCount;
 function updateWordCount(){document.getElementById('wordCount').textContent=document.getElementById('scriptText').value.trim().split(/\s+/).filter(Boolean).length+' слов';}
 
-const dz=document.getElementById('dropZone');
-dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag');});
-dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
-dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)loadDocx(f);});
-document.getElementById('docxInput').onchange=function(){if(this.files[0])loadDocx(this.files[0]);};
+document.getElementById('voiceoverText').oninput=function(){
+  S.voiceoverText=this.value;
+  updateWordCountVO();
+  updateDurCalc();
+};
+function updateWordCountVO(){document.getElementById('wordCountVO').textContent=document.getElementById('voiceoverText').value.trim().split(/\s+/).filter(Boolean).length+' слов';}
 
-// Строит map: id -> текст комментария из comments.xml
+document.getElementById('durationInput').oninput=function(){
+  S.videoDurationSec=parseDuration(this.value);
+  updateDurCalc();
+};
+
+// ─── DOCX PARSING ────────────────────────────────────────────────────────
 function extractCommentsMap(xml){
   const map={};
   let pos=0;
@@ -370,17 +483,12 @@ function extractCommentsMap(xml){
     const ce=xml.indexOf('</w:comment>',cs);
     if(ce===-1)break;
     const block=xml.slice(cs,ce);
-    const texts=[];
-    let ti=0;
+    const texts=[];let ti=0;
     while(ti<block.length){
-      const ts=block.indexOf('<w:t',ti);
-      if(ts===-1)break;
-      const te=block.indexOf('>',ts);
-      if(te===-1)break;
-      const tc=block.indexOf('</w:t>',te);
-      if(tc===-1)break;
-      const txt=block.slice(te+1,tc);
-      if(txt.trim())texts.push(txt);
+      const ts=block.indexOf('<w:t',ti);if(ts===-1)break;
+      const te=block.indexOf('>',ts);if(te===-1)break;
+      const tc=block.indexOf('</w:t>',te);if(tc===-1)break;
+      const txt=block.slice(te+1,tc);if(txt.trim())texts.push(txt);
       ti=tc+6;
     }
     if(texts.length)map[id]=texts.join(' ');
@@ -389,16 +497,13 @@ function extractCommentsMap(xml){
   return map;
 }
 
-// Парсит document.xml и вставляет комментарий inline после прокомментированной фразы
 function parseDocInline(docXml,commentsMap){
-  const ent=s=>s.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#xD;/g,'');
+  const ent=function(s){return s.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#xD;/g,'');};
   let out='';let i=0;
   while(i<docXml.length){
     if(docXml[i]!=='<'){i++;continue;}
-    const end=docXml.indexOf('>',i);
-    if(end===-1)break;
-    const tag=docXml.slice(i,end+1);
-    i=end+1;
+    const end=docXml.indexOf('>',i);if(end===-1)break;
+    const tag=docXml.slice(i,end+1);i=end+1;
     if(tag.indexOf('w:commentRangeEnd')>-1){
       const m=tag.match(/w:id="(\d+)"/);
       if(m&&commentsMap[m[1]])out+=' [КОММЕНТАРИЙ: '+commentsMap[m[1]]+']';
@@ -416,62 +521,126 @@ function parseDocInline(docXml,commentsMap){
   return out.replace(/\n{3,}/g,'\n\n').trim();
 }
 
-function loadDocx(file){
-  dz.innerHTML='<span class="drop-icon">&#9203;</span><span class="drop-text">&#1063;&#1080;&#1090;&#1072;&#1102; '+file.name+'...</span>';
-  const r=new FileReader();
-  r.onerror=()=>{dz.innerHTML='<span class="drop-icon">&#10060;</span><span class="drop-text">&#1054;&#1096;&#1080;&#1073;&#1082;&#1072;</span>';};
-  r.onload=async e=>{
-    const buf=e.target.result;
-    try{
-      if(typeof JSZip==='undefined')throw new Error('JSZip не загрузился');
-      const zip=await new JSZip().loadAsync(buf);
-      const docFile=zip.file('word/document.xml');
-      if(!docFile)throw new Error('document.xml не найден');
-      const docXml=await docFile.async('text');
-      let commentsMap={};
-      const cmFile=zip.file('word/comments.xml');
-      if(cmFile)commentsMap=extractCommentsMap(await cmFile.async('text'));
-      const text=parseDocInline(docXml,commentsMap);
-      if(!text){dz.innerHTML='<span class="drop-icon">&#9888;&#65039;</span><span class="drop-text">&#1060;&#1072;&#1081;&#1083; &#1087;&#1091;&#1089;&#1090;&#1086;&#1081;</span>';return;}
-      document.getElementById('scriptText').value=text;
-      updateWordCount();
-      const wc=text.split(/\s+/).filter(Boolean).length;
-      const cmCount=Object.keys(commentsMap).length;
-      dz.innerHTML='<span class="drop-icon">&#9989;</span><span class="drop-text">'+file.name+'</span>'
-        +'<span class="drop-sub">'+wc+' слов'+(cmCount?' · '+cmCount+' комментариев':'')+' </span>';
-    }catch(err){
-      dz.innerHTML='<span class="drop-icon">&#10060;</span><span class="drop-text">'+err.message+'</span>';
-    }
-  };
-  r.readAsArrayBuffer(file);
+async function readDocx(file){
+  return new Promise(function(resolve,reject){
+    const r=new FileReader();
+    r.onerror=function(){reject(new Error('Ошибка чтения файла'));};
+    r.onload=async function(e){
+      try{
+        if(typeof JSZip==='undefined')throw new Error('JSZip не загрузился');
+        const zip=await new JSZip().loadAsync(e.target.result);
+        const docFile=zip.file('word/document.xml');
+        if(!docFile)throw new Error('document.xml не найден');
+        const docXml=await docFile.async('text');
+        let commentsMap={};
+        const cmFile=zip.file('word/comments.xml');
+        if(cmFile)commentsMap=extractCommentsMap(await cmFile.async('text'));
+        const text=parseDocInline(docXml,commentsMap);
+        resolve({text:text,commentsMap:commentsMap});
+      }catch(err){reject(err);}
+    };
+    r.readAsArrayBuffer(file);
+  });
 }
 
+const dz=document.getElementById('dropZone');
+dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('drag');});
+dz.addEventListener('dragleave',function(){dz.classList.remove('drag');});
+dz.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)loadScript(f);});
+document.getElementById('docxInput').onchange=function(){if(this.files[0])loadScript(this.files[0]);};
+
+async function loadScript(file){
+  dz.innerHTML='<span class="drop-icon">&#9203;</span><span class="drop-text">Читаю '+file.name+'...</span>';
+  try{
+    const {text,commentsMap}=await readDocx(file);
+    if(!text){dz.innerHTML='<span class="drop-icon">&#9888;&#65039;</span><span class="drop-text">Файл пустой</span>';return;}
+    document.getElementById('scriptText').value=text;
+    updateWordCount();
+    const wc=text.split(/\s+/).filter(Boolean).length;
+    const cmCount=Object.keys(commentsMap).length;
+    dz.innerHTML='<span class="drop-icon">&#9989;</span><span class="drop-text">'+file.name+'</span>'
+      +'<span class="drop-sub">'+wc+' слов'+(cmCount?' · '+cmCount+' комментариев':'')+' </span>';
+  }catch(err){
+    dz.innerHTML='<span class="drop-icon">&#10060;</span><span class="drop-text">'+err.message+'</span>';
+  }
+}
+
+const dzVO=document.getElementById('dropZoneVO');
+dzVO.addEventListener('dragover',function(e){e.preventDefault();dzVO.classList.add('drag');});
+dzVO.addEventListener('dragleave',function(){dzVO.classList.remove('drag');});
+dzVO.addEventListener('drop',function(e){e.preventDefault();dzVO.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)loadVoiceover(f);});
+document.getElementById('docxInputVO').onchange=function(){if(this.files[0])loadVoiceover(this.files[0]);};
+
+async function loadVoiceover(file){
+  dzVO.innerHTML='<span class="drop-icon">&#9203;</span><span class="drop-text">Читаю '+file.name+'...</span>';
+  try{
+    let text='';
+    if(file.name.indexOf('.txt')>-1){
+      text=await new Promise(function(res,rej){const r=new FileReader();r.onerror=rej;r.onload=function(e){res(e.target.result);};r.readAsText(file,'utf-8');});
+    } else {
+      const res=await readDocx(file);
+      text=res.text;
+    }
+    if(!text){dzVO.innerHTML='<span class="drop-icon">&#9888;&#65039;</span><span class="drop-text">Файл пустой</span>';return;}
+    document.getElementById('voiceoverText').value=text;
+    S.voiceoverText=text;
+    updateWordCountVO();
+    updateDurCalc();
+    const wc=text.split(/\s+/).filter(Boolean).length;
+    dzVO.innerHTML='<span class="drop-icon">&#9989;</span><span class="drop-text">'+file.name+'</span>'
+      +'<span class="drop-sub">'+wc+' слов озвучки</span>';
+  }catch(err){
+    dzVO.innerHTML='<span class="drop-icon">&#10060;</span><span class="drop-text">'+err.message+'</span>';
+  }
+}
 
 // ─── JSON / GEMINI HELPERS ────────────────────────────────────────────────
 function safeParseJSON(raw){
   let s=raw.replace(/```json|```/g,'').trim();
   try{return JSON.parse(s);}catch(e){}
-  function fix(str){let o='',inS=false,esc=false;for(let i=0;i<str.length;i++){const c=str[i];if(esc){o+=c;esc=false;continue;}if(c==='\\'){o+=c;esc=true;continue;}if(c==='"'){inS=!inS;o+=c;continue;}if(inS&&(c==='\n'||c==='\r')){o+='\\n';continue;}if(inS&&c==='\t'){o+='\\t';continue;}o+=c;}return o;}
+  function fix(str){
+    let o='',inS=false,esc=false;
+    for(let i=0;i<str.length;i++){
+      const c=str[i];
+      if(esc){o+=c;esc=false;continue;}
+      if(c==='\\'){o+=c;esc=true;continue;}
+      if(c==='"'){inS=!inS;o+=c;continue;}
+      if(inS&&(c==='\n'||c==='\r')){o+='\\n';continue;}
+      if(inS&&c==='\t'){o+='\\t';continue;}
+      o+=c;
+    }
+    return o;
+  }
   try{return JSON.parse(fix(s));}catch(e){}
   let depth=0,last=-1,inS=false,esc=false;
-  for(let i=0;i<s.length;i++){const c=s[i];if(esc){esc=false;continue;}if(c==='\\'){esc=true;continue;}if(c==='"'&&!esc){inS=!inS;continue;}if(inS)continue;if(c==='{'||c==='[')depth++;if(c==='}'||c===']'){depth--;if(depth===0)last=i;}}
+  for(let i=0;i<s.length;i++){
+    const c=s[i];
+    if(esc){esc=false;continue;}
+    if(c==='\\'){esc=true;continue;}
+    if(c==='"'&&!esc){inS=!inS;continue;}
+    if(inS)continue;
+    if(c==='{'||c==='[')depth++;
+    if(c==='}'||c===']'){depth--;if(depth===0)last=i;}
+  }
   if(last>0){try{return JSON.parse(fix(s.substring(0,last+1)));}catch(e){}}
-  console.error('[safeParseJSON] raw (first 500):', s.slice(0,500));
-  throw new Error('Не удалось разобрать ответ Gemini. Открой консоль (F12) чтобы увидеть детали.');
+  console.error('[safeParseJSON] raw (first 600):', s.slice(0,600));
+  throw new Error('Не удалось разобрать ответ Gemini. Открой консоль (F12) для деталей.');
 }
 
 function getGeminiText(data){
-  const parts=data?.candidates?.[0]?.content?.parts||[];
-  const txt=parts.find(p=>!p.thought)?.text||'';
+  const parts=data&&data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts||[];
+  let txt='';
+  for(let i=0;i<parts.length;i++){if(!parts[i].thought&&parts[i].text){txt=parts[i].text;break;}}
   if(!txt&&parts.length){
-    console.warn('[Gemini] parts:', JSON.stringify(parts).slice(0,300));
-    console.warn('[Gemini] finishReason:', data?.candidates?.[0]?.finishReason);
+    console.warn('[Gemini] parts:',JSON.stringify(parts).slice(0,300));
+    console.warn('[Gemini] finishReason:',data&&data.candidates&&data.candidates[0]&&data.candidates[0].finishReason);
   }
   return txt;
 }
 
-async function geminiCall(prompt,maxTokens=12000){
-  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${S.apiKey}`,{
+async function geminiCall(prompt,maxTokens){
+  if(!maxTokens)maxTokens=12000;
+  const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+S.apiKey,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
@@ -485,7 +654,7 @@ async function geminiCall(prompt,maxTokens=12000){
     })
   });
   const data=await res.json();
-  if(!res.ok)throw new Error(data?.error?.message||`HTTP ${res.status}`);
+  if(!res.ok)throw new Error((data&&data.error&&data.error.message)||'HTTP '+res.status);
   return getGeminiText(data);
 }
 
@@ -501,38 +670,20 @@ async function analyzeScript(){
   document.getElementById('analyzeLoad').style.display='block';
   document.getElementById('analyzeTxt').textContent='Анализирую сценарий...';
 
-  const prompt=`You are a professional director and editor for science documentary video.
+  const timing=calcTiming();
+  let timingNote='Each scene should be ~8-12 seconds and ~25-40 words.';
+  let timingSchema='"start_time":"0:00","end_time":"0:10"';
+  if(timing){
+    const wps=timing.secPerWord>0?Math.round(8/timing.secPerWord):30;
+    timingNote='Video total duration: '+fmtTime(timing.totalSecs)+'. Voiceover has '+timing.totalWords+' words. Each visual shot = max 10 seconds = ~'+wps+' words. Calculate start_time and end_time for each scene based on word position in the voiceover text.';
+  }
 
-Analyze this script and divide it into visual scenes (~8-12 seconds each, ~25-40 words per scene).
+  const voiceoverSection=S.voiceoverText?'\n\nVOICEOVER TEXT (use for timing calculation):\n'+S.voiceoverText:'';
 
-For each scene, classify as:
-"ai" — Generate with AI image tool (Nano Banana 2 / Google Flow):
-  · Cinematic scenes with clear visual action (spacecraft flying, creatures moving, landscapes)
-  · Atmospheric establishing shots (environments, space, planet surfaces)
-  · Any scene benefiting from photorealistic or artistic imagery
-  · Author comments mention "animation", "show", "beautiful", "visual"
-
-"ae" — After Effects / Motion Graphics:
-  · Exact scale/size comparisons with numbers ("109 times larger")
-  · Infographics, timelines, diagrams, charts
-  · Data visualization with precise values
-  · Step-by-step process explanations
-  · Text-heavy explanations needing precise layout
-
-"hybrid" — AI generates the visual base, After Effects adds labels/data overlays:
-  · Scene needs both cinematic imagery AND text/data on top
-  · Beautiful background + informational overlay
-
-Project context: ${styleCtx()}
-
-Return ONLY valid JSON:
-{"total_scenes":N,"ai_count":N,"ae_count":N,"hybrid_count":N,"scenes":[{"id":1,"excerpt":"first 8-10 words verbatim from script","type":"ai","reason":"one sentence explanation","description":"what to show visually","duration_est":"~8s"}]}
-
-Script:
-${script}`;
+  const prompt='You are a professional director and editor for science documentary video.\n\nAnalyze this script and divide it into visual scenes. Each scene = ONE visual shot, max 10 seconds.\n\n'+timingNote+'\n\nFor each scene, classify as:\n"ai" - Generate with AI image tool:\n  · Cinematic scenes with clear visual action\n  · Atmospheric shots, environments, space, creatures\n  · Any scene benefiting from photorealistic imagery\n  · Author comments say "animation", "show", "visual", "beautiful"\n\n"ae" - After Effects / Motion Graphics:\n  · Exact scale/size comparisons with numbers\n  · Infographics, timelines, diagrams, charts\n  · Data visualization with precise values\n  · Text-heavy explanations\n\n"hybrid" - AI base + After Effects overlay:\n  · Needs both cinematic imagery AND text/data on top\n\nProject context: '+styleCtx()+'\n\nReturn ONLY valid JSON:\n{"total_scenes":N,"ai_count":N,"ae_count":N,"hybrid_count":N,"scenes":[{"id":1,"excerpt":"first 8-10 words verbatim","type":"ai","reason":"one sentence","description":"what to show visually",'+timingSchema+'}]}'+'\n\nSCRIPT:\n'+script+voiceoverSection;
 
   try{
-    const raw=await geminiCall(prompt,16000);
+    const raw=await geminiCall(prompt,18000);
     const data=safeParseJSON(raw);
     if(!data.scenes||!data.scenes.length)throw new Error('Нет сцен в ответе');
     S.shotList=data;
@@ -543,7 +694,7 @@ ${script}`;
     document.getElementById('promptSection').style.display='none';
     document.getElementById('promptList').innerHTML='';
     document.getElementById('exportBar').innerHTML='';
-    setTimeout(()=>document.getElementById('shotSection').scrollIntoView({behavior:'smooth',block:'start'}),100);
+    setTimeout(function(){document.getElementById('shotSection').scrollIntoView({behavior:'smooth',block:'start'});},100);
   }catch(e){
     document.getElementById('analyzeError').textContent='Ошибка анализа: '+e.message;
     document.getElementById('analyzeError').style.display='block';
@@ -557,98 +708,96 @@ ${script}`;
 function renderShotList(){
   const d=S.shotList;
   const scenes=d.scenes;
-  const aiN=scenes.filter(s=>s.type==='ai').length;
-  const aeN=scenes.filter(s=>s.type==='ae').length;
-  const hyN=scenes.filter(s=>s.type==='hybrid').length;
+  const aiN=scenes.filter(function(s){return s.type==='ai';}).length;
+  const aeN=scenes.filter(function(s){return s.type==='ae';}).length;
+  const hyN=scenes.filter(function(s){return s.type==='hybrid';}).length;
 
-  document.getElementById('statsBar').innerHTML=`
-    <div class="stat"><span class="stat-k">ВСЕГО СЦЕН</span><span class="stat-v">${scenes.length}</span></div>
-    <div class="stat"><span class="stat-k">AI ГЕНЕРАЦИЯ</span><span class="stat-v ai">${aiN}</span></div>
-    <div class="stat"><span class="stat-k">AFTER EFFECTS</span><span class="stat-v ae">${aeN}</span></div>
-    <div class="stat"><span class="stat-k">ГИБРИД</span><span class="stat-v hy">${hyN}</span></div>`;
+  document.getElementById('statsBar').innerHTML=
+    '<div class="stat"><span class="stat-k">ВСЕГО СЦЕН</span><span class="stat-v">'+scenes.length+'</span></div>'+
+    '<div class="stat"><span class="stat-k">AI ГЕНЕРАЦИЯ</span><span class="stat-v ai">'+aiN+'</span></div>'+
+    '<div class="stat"><span class="stat-k">AFTER EFFECTS</span><span class="stat-v ae">'+aeN+'</span></div>'+
+    '<div class="stat"><span class="stat-k">ГИБРИД</span><span class="stat-v hy">'+hyN+'</span></div>';
 
   const qr=document.getElementById('quickRow');
   qr.innerHTML='<span class="quick-lbl">Выбрать:</span>';
-
   for(let i=0;i<scenes.length;i+=10){
-    const end=Math.min(i+10,scenes.length);
+    const endIdx=Math.min(i+10,scenes.length);
     const b=document.createElement('button');
-    b.className='btn-sm';b.textContent=`${i+1}–${end}`;
-    b.onclick=(()=>{const f=i,t=end;return()=>selRange(f,t);})();
+    b.className='btn-sm';b.textContent=(i+1)+'–'+endIdx;
+    b.onclick=(function(f,t){return function(){selRange(f,t);};})(i,endIdx);
     qr.appendChild(b);
   }
-
   const bAll=document.createElement('button');bAll.className='btn-sm';bAll.textContent='Все AI+Гибрид';
-  bAll.onclick=()=>{S.selectedIds=new Set(scenes.filter(s=>s.type!=='ae').map(s=>s.id));updateCards();updateGenBtn();};
+  bAll.onclick=function(){S.selectedIds=new Set(scenes.filter(function(s){return s.type!=='ae';}).map(function(s){return s.id;}));updateCards();updateGenBtn();};
   qr.appendChild(bAll);
-
   const bNone=document.createElement('button');bNone.className='btn-sm';bNone.textContent='Снять всё';
-  bNone.onclick=()=>{S.selectedIds=new Set();updateCards();updateGenBtn();};
+  bNone.onclick=function(){S.selectedIds=new Set();updateCards();updateGenBtn();};
   qr.appendChild(bNone);
 
   const list=document.getElementById('sceneList');
   list.innerHTML='';
-  scenes.forEach(sc=>{
+  scenes.forEach(function(sc){
     const card=document.createElement('div');
-    card.className=`scene-card ${sc.type}`;card.id=`sc-${sc.id}`;
+    card.className='scene-card '+sc.type;card.id='sc-'+sc.id;
     const typeLbl=sc.type==='ai'?'AI ГЕНЕРАЦИЯ':sc.type==='ae'?'AFTER EFFECTS':'ГИБРИД';
-    card.innerHTML=`
-      <div class="sc-check" id="chk-${sc.id}"></div>
-      <div class="sc-body">
-        <div class="sc-meta">
-          <span class="badge ${sc.type}">${typeLbl}</span>
-          <span class="sc-num">#${sc.id}</span>
-          <span class="sc-dur">${sc.duration_est||''}</span>
-        </div>
-        <div class="sc-exc">${sc.excerpt}…</div>
-        <div class="sc-reason">${sc.reason}</div>
-      </div>`;
-    card.onclick=()=>toggleSc(sc.id);
+    const timeStr=(sc.start_time&&sc.end_time)?'<span class="sc-time">'+sc.start_time+'–'+sc.end_time+'</span>':'';
+    card.innerHTML=
+      '<div class="sc-check" id="chk-'+sc.id+'"></div>'+
+      '<div class="sc-body">'+
+        '<div class="sc-meta">'+
+          '<span class="badge '+sc.type+'">'+typeLbl+'</span>'+
+          '<span class="sc-num">#'+sc.id+'</span>'+
+          timeStr+
+        '</div>'+
+        '<div class="sc-exc">'+sc.excerpt+'…</div>'+
+        '<div class="sc-reason">'+sc.reason+'</div>'+
+      '</div>';
+    card.onclick=function(){toggleSc(sc.id);};
     list.appendChild(card);
   });
-
   updateGenBtn();
 }
 
-function selRange(from,to){S.shotList.scenes.slice(from,to).forEach(s=>S.selectedIds.add(s.id));updateCards();updateGenBtn();}
+function selRange(from,to){S.shotList.scenes.slice(from,to).forEach(function(s){S.selectedIds.add(s.id);});updateCards();updateGenBtn();}
 function toggleSc(id){if(S.selectedIds.has(id))S.selectedIds.delete(id);else S.selectedIds.add(id);updateCards();updateGenBtn();}
-function updateCards(){S.shotList.scenes.forEach(s=>{const card=document.getElementById(`sc-${s.id}`),chk=document.getElementById(`chk-${s.id}`);if(!card)return;if(S.selectedIds.has(s.id)){card.classList.add('selected');chk.textContent='✓';}else{card.classList.remove('selected');chk.textContent='';}});}
-function updateGenBtn(){const btn=document.getElementById('generateBtn');const n=S.selectedIds.size;btn.style.display=n>0?'block':'none';btn.textContent=`ГЕНЕРИРОВАТЬ ПРОМТЫ ДЛЯ ВЫБРАННЫХ (${n})`;}
+function updateCards(){
+  S.shotList.scenes.forEach(function(s){
+    const card=document.getElementById('sc-'+s.id),chk=document.getElementById('chk-'+s.id);
+    if(!card)return;
+    if(S.selectedIds.has(s.id)){card.classList.add('selected');chk.textContent='✓';}
+    else{card.classList.remove('selected');chk.textContent='';}
+  });
+}
+function updateGenBtn(){
+  const btn=document.getElementById('generateBtn');const n=S.selectedIds.size;
+  btn.style.display=n>0?'block':'none';
+  btn.textContent='ГЕНЕРИРОВАТЬ ПРОМТЫ ДЛЯ ВЫБРАННЫХ ('+n+')';
+}
 
 // ─── GENERATE PROMPTS ─────────────────────────────────────────────────────
 async function generatePrompts(){
   if(!S.selectedIds.size)return;
-  const selected=S.shotList.scenes.filter(s=>S.selectedIds.has(s.id));
+  const selected=S.shotList.scenes.filter(function(s){return S.selectedIds.has(s.id);});
   const btn=document.getElementById('generateBtn');
   btn.disabled=true;btn.style.animation='blink 1s infinite';
   document.getElementById('generateError').style.display='none';
   document.getElementById('generateLoad').style.display='block';
-  document.getElementById('generateTxt').textContent=`Генерирую промты для ${selected.length} сцен...`;
+  document.getElementById('generateTxt').textContent='Генерирую промты для '+selected.length+' сцен...';
 
-  const scenesStr=selected.map(s=>`Scene #${s.id} [${s.type}]: "${s.excerpt}" → ${s.description}`).join('\n');
+  const scenesStr=selected.map(function(s){
+    const t=s.start_time&&s.end_time?' ['+s.start_time+'-'+s.end_time+']':'';
+    return 'Scene #'+s.id+t+' ['+s.type+']: "'+s.excerpt+'" -> '+s.description;
+  }).join('\n');
 
-  const prompt=`You are an elite cinematic image prompt engineer for science documentary content.
-
-Style guide: ${styleCtx()}
-
-Instructions:
-- For AI and hybrid scenes: write ONE perfect cinematic image prompt in English (60-80 words). Structure: subject + action + environment + lighting + camera/composition + style. Always end with "Photorealistic, science documentary, high detail."
-- For AE scenes: write a brief motion graphic description in Russian (2-3 sentences): what to animate, what data/text to show, composition and style.
-- For hybrid scenes: write the AI prompt, then add a short note "// AE overlay: [what After Effects adds]"
-
-Scenes:
-${scenesStr}
-
-Return ONLY valid JSON:
-{"results":[{"id":1,"type":"ai","prompt":"Cinematic wide shot...","ae_brief":null}]}`;
+  const prompt='You are an elite cinematic image prompt engineer for science documentary content.\n\nStyle guide: '+styleCtx()+'\n\nInstructions:\n- For AI and hybrid scenes: write ONE perfect cinematic image prompt in English (70-90 words). Structure: subject + action + environment + lighting + camera/composition + render quality. Always end with: "'+QUALITY_SUFFIX+'"\n- For AE scenes: write a brief motion graphic description in Russian (2-3 sentences): what to animate, what data to show, composition.\n- For hybrid scenes: write the AI prompt, then add "// AE overlay: [what After Effects adds on top]"\n\nScenes:\n'+scenesStr+'\n\nReturn ONLY valid JSON:\n{"results":[{"id":1,"type":"ai","prompt":"Cinematic wide shot...","ae_brief":null}]}';
 
   try{
-    const raw=await geminiCall(prompt,16000);
+    const raw=await geminiCall(prompt,18000);
     const data=safeParseJSON(raw);
-    data.results.forEach(r=>{S.prompts[r.id]={...r,angles:[]};});
+    data.results.forEach(function(r){S.prompts[r.id]={...r,angles:[]};});
     renderPrompts(selected);
     document.getElementById('promptSection').style.display='block';
-    setTimeout(()=>document.getElementById('promptSection').scrollIntoView({behavior:'smooth',block:'start'}),100);
+    setTimeout(function(){document.getElementById('promptSection').scrollIntoView({behavior:'smooth',block:'start'});},100);
   }catch(e){
     document.getElementById('generateError').textContent='Ошибка генерации: '+e.message;
     document.getElementById('generateError').style.display='block';
@@ -662,79 +811,130 @@ Return ONLY valid JSON:
 // ─── RENDER PROMPTS ───────────────────────────────────────────────────────
 function renderPrompts(scenes){
   const list=document.getElementById('promptList');
-  scenes.forEach(sc=>{
+  scenes.forEach(function(sc){
     const p=S.prompts[sc.id];if(!p)return;
-    const old=document.getElementById(`pc-${sc.id}`);if(old)old.remove();
+    const old=document.getElementById('pc-'+sc.id);if(old)old.remove();
     const isAI=sc.type==='ai'||sc.type==='hybrid';
     const typeLbl=sc.type==='ai'?'AI ГЕНЕРАЦИЯ':sc.type==='ae'?'AFTER EFFECTS':'ГИБРИД';
+    const timeStr=(sc.start_time&&sc.end_time)?'<span class="sc-time">'+sc.start_time+'–'+sc.end_time+'</span>':'';
     const card=document.createElement('div');
-    card.className=`prompt-card ${sc.type}`;card.id=`pc-${sc.id}`;
-    card.innerHTML=`
-      <div class="pc-head">
-        <div class="pc-info">
-          <div class="sc-meta" style="margin-bottom:2px">
-            <span class="badge ${sc.type}">${typeLbl}</span>
-            <span class="sc-num">#${sc.id}</span>
-            <span class="sc-dur">${sc.duration_est||''}</span>
-          </div>
-          <div class="pc-exc">${sc.excerpt}…</div>
-        </div>
-        <div class="pc-btns">
-          ${isAI?`<button class="btn-sm expand" id="expbtn-${sc.id}" onclick="expandAngles(${sc.id})">+ 4 ракурса</button>`:''}
-          <button class="btn-sm" id="cpbtn-${sc.id}" onclick="copyPrompt(${sc.id})">Копировать</button>
-        </div>
-      </div>
-      <div class="pc-body">
-        <div class="${isAI?'pc-prompt':'pc-ae'}" id="pt-${sc.id}">${isAI?(p.prompt||''):(p.ae_brief||'')}</div>
-      </div>
-      <div class="angles-wrap" id="ang-${sc.id}" style="display:none"></div>`;
+    card.className='prompt-card '+sc.type;card.id='pc-'+sc.id;
+    card.innerHTML=
+      '<div class="pc-head">'+
+        '<div class="pc-info">'+
+          '<div class="sc-meta" style="margin-bottom:2px">'+
+            '<span class="badge '+sc.type+'">'+typeLbl+'</span>'+
+            '<span class="sc-num">#'+sc.id+'</span>'+
+            timeStr+
+          '</div>'+
+          '<div class="pc-exc">'+sc.excerpt+'…</div>'+
+        '</div>'+
+        '<div class="pc-btns">'+
+          (isAI?'<button class="btn-sm expand" id="expbtn-'+sc.id+'" onclick="expandAngles('+sc.id+')">+ 4 ракурса</button>':'')+
+          (isAI?'<div class="regen-wrap" id="rw-'+sc.id+'"><button class="btn-regen" onclick="toggleRegenMenu('+sc.id+',event)">↺ стиль ▾</button><div class="regen-menu" id="rm-'+sc.id+'" style="display:none">'+buildRegenMenu(sc.id)+'</div></div>':'')+
+          '<button class="btn-sm" id="cpbtn-'+sc.id+'" onclick="copyPrompt('+sc.id+')">Копировать</button>'+
+        '</div>'+
+      '</div>'+
+      '<div class="pc-body">'+
+        '<div class="'+(isAI?'pc-prompt':'pc-ae')+'" id="pt-'+sc.id+'">'+(isAI?(p.prompt||''):(p.ae_brief||''))+'</div>'+
+      '</div>'+
+      '<div class="angles-wrap" id="ang-'+sc.id+'" style="display:none"></div>';
     list.appendChild(card);
   });
 
-  document.getElementById('exportBar').innerHTML=`
-    <button class="btn-ghost" onclick="copyAll()">Копировать всё</button>
-    <button class="btn-ghost" onclick="exportCowork()">Экспорт для Cowork</button>
-    <button class="btn-ghost" onclick="exportJSON()">Скачать JSON</button>`;
+  document.getElementById('exportBar').innerHTML=
+    '<button class="btn-ghost" onclick="copyAll()">Копировать всё</button>'+
+    '<button class="btn-ghost" onclick="exportCowork()">Экспорт для Flow</button>'+
+    '<button class="btn-ghost" onclick="exportJSON()">Скачать JSON</button>';
+}
+
+function buildRegenMenu(id){
+  let html='';
+  let lastCat='';
+  REGEN_STYLES.forEach(function(rs){
+    if(rs.cat!==lastCat){html+='<div class="regen-sect">'+rs.cat+'</div>';lastCat=rs.cat;}
+    html+='<button class="regen-opt" onclick="regenPrompt('+id+',\''+rs.key+'\',null)">'+rs.lbl+'</button>';
+  });
+  html+='<div class="regen-custom-row"><input class="regen-custom-input" id="rci-'+id+'" placeholder="Свой стиль..."><button class="regen-custom-btn" onclick="regenCustom('+id+')">↺</button></div>';
+  return html;
+}
+
+function toggleRegenMenu(id,e){
+  e.stopPropagation();
+  const menu=document.getElementById('rm-'+id);
+  const isOpen=menu.style.display!=='none';
+  closeAllRegenMenus();
+  if(!isOpen)menu.style.display='block';
+}
+function closeAllRegenMenus(){
+  document.querySelectorAll('.regen-menu').forEach(function(m){m.style.display='none';});
+}
+document.addEventListener('click',closeAllRegenMenus);
+
+function regenCustom(id){
+  const input=document.getElementById('rci-'+id);
+  if(input&&input.value.trim())regenPrompt(id,null,input.value.trim());
+}
+
+async function regenPrompt(id,styleKey,customCtx){
+  closeAllRegenMenus();
+  const styleOverride=customCtx||(styleKey?REGEN_STYLES.find(function(r){return r.key===styleKey;})&&REGEN_STYLES.find(function(r){return r.key===styleKey;}).ctx:'');
+  const sc=S.shotList&&S.shotList.scenes.find(function(s){return s.id===id;});
+  const p=S.prompts[id];
+  if(!sc||!p)return;
+
+  const ptEl=document.getElementById('pt-'+id);
+  if(ptEl)ptEl.style.opacity='0.3';
+
+  const regenBtn=document.querySelector('#rw-'+id+' .btn-regen');
+  if(regenBtn){regenBtn.textContent='↺ ...';regenBtn.disabled=true;}
+
+  const prompt='You are an elite cinematic image prompt engineer for science documentary.\n\nRegenerate a prompt for this scene.\nScene description: "'+sc.description+'"\nOriginal excerpt: "'+sc.excerpt+'"\n\nStyle override: '+styleOverride+'\nBase project style: '+styleCtx()+'\n\nWrite ONE perfect cinematic image prompt in English (70-90 words). End with: "'+QUALITY_SUFFIX+'"\n\nReturn ONLY valid JSON: {"prompt":"..."}';
+
+  try{
+    const raw=await geminiCall(prompt,2000);
+    const data=safeParseJSON(raw);
+    p.prompt=data.prompt;
+    if(ptEl){ptEl.textContent=p.prompt;ptEl.style.opacity='1';}
+    p.angles=[];
+    const angWrap=document.getElementById('ang-'+id);
+    if(angWrap){angWrap.style.display='none';angWrap.innerHTML='';}
+    const expBtn=document.getElementById('expbtn-'+id);
+    if(expBtn){expBtn.disabled=false;expBtn.innerHTML='+ 4 ракурса';expBtn.classList.remove('spinning');}
+  }catch(e){
+    if(ptEl)ptEl.style.opacity='1';
+    alert('Ошибка перегенерации: '+e.message);
+  }finally{
+    if(regenBtn){regenBtn.textContent='↺ стиль ▾';regenBtn.disabled=false;}
+  }
 }
 
 // ─── EXPAND ANGLES ────────────────────────────────────────────────────────
 async function expandAngles(id){
-  const btn=document.getElementById(`expbtn-${id}`);
-  if(btn){btn.disabled=true;btn.innerHTML='<span>⟳</span>';btn.classList.add('spinning');}
+  const btn=document.getElementById('expbtn-'+id);
+  if(btn){btn.disabled=true;btn.innerHTML='<span>&#8987;</span>';btn.classList.add('spinning');}
   const p=S.prompts[id];
-  const sc=S.shotList.scenes.find(s=>s.id===id);
+  const sc=S.shotList.scenes.find(function(s){return s.id===id;});
   if(!p||!sc){if(btn){btn.disabled=false;btn.innerHTML='+ 4 ракурса';btn.classList.remove('spinning');}return;}
 
-  const prompt=`You are a cinematic image prompt engineer.
-
-Original prompt for scene "${sc.description}":
-${p.prompt}
-
-Style: ${styleCtx()}
-
-Write 3 MORE distinctly different camera angles/perspectives for the SAME scene. Do NOT repeat the original prompt.
-Make each angle clearly different:
-1. Medium/close shot — focusing on a specific subject or element
-2. Macro/extreme detail — ultra-close, textures or small elements
-3. Creative/unexpected — unusual angle, abstract, silhouette, or bold perspective
-
-Return ONLY valid JSON:
-{"angles":[{"label":"СРЕДНИЙ","prompt":"..."},{"label":"МАКРО","prompt":"..."},{"label":"ТВОРЧЕСКИЙ","prompt":"..."}]}`;
+  const prompt='You are a cinematic image prompt engineer.\n\nOriginal prompt for scene "'+sc.description+'":\n'+p.prompt+'\n\nStyle: '+styleCtx()+'\n\nWrite 3 MORE distinctly different camera angles for the SAME scene. Do NOT repeat the original.\n1. Medium/close — focusing on a specific element\n2. Macro/extreme detail — ultra-close textures\n3. Creative/unexpected — unusual angle, silhouette, or bold perspective\n\nEach prompt must end with: "'+QUALITY_SUFFIX+'"\n\nReturn ONLY valid JSON:\n{"angles":[{"label":"СРЕДНИЙ","prompt":"..."},{"label":"МАКРО","prompt":"..."},{"label":"ТВОРЧЕСКИЙ","prompt":"..."}]}';
 
   try{
-    const raw=await geminiCall(prompt,4000);
+    const raw=await geminiCall(prompt,5000);
     const data=safeParseJSON(raw);
     p.angles=data.angles;
-    const wrap=document.getElementById(`ang-${id}`);
+    const wrap=document.getElementById('ang-'+id);
     wrap.style.display='flex';
-    wrap.innerHTML=data.angles.map((a,i)=>`
-      <div class="angle-item">
-        <div class="angle-top">
-          <span class="angle-lbl">${a.label}</span>
-          <button class="btn-sm" id="acpbtn-${id}-${i}" onclick="copyText('acpbtn-${id}-${i}',\`${a.prompt.replace(/`/g,"'").replace(/\\/g,'\\\\')}\`)">Копировать</button>
-        </div>
-        <div class="angle-txt">${a.prompt}</div>
-      </div>`).join('');
+    wrap.innerHTML=data.angles.map(function(a,i){
+      const safePrompt=a.prompt.replace(/\\/g,'\\\\').replace(/`/g,"'").replace(/'/g,'&#39;');
+      return '<div class="angle-item">'+
+        '<div class="angle-top">'+
+          '<span class="angle-lbl">'+a.label+'</span>'+
+          '<button class="btn-sm" id="acpbtn-'+id+'-'+i+'" onclick="copyAngle(\'acpbtn-'+id+'-'+i+'\','+i+','+id+')">Копировать</button>'+
+        '</div>'+
+        '<div class="angle-txt" id="at-'+id+'-'+i+'">'+a.prompt+'</div>'+
+      '</div>';
+    }).join('');
     if(btn){btn.innerHTML='✓ Готово';btn.classList.remove('spinning');}
   }catch(e){
     if(btn){btn.disabled=false;btn.innerHTML='+ 4 ракурса';btn.classList.remove('spinning');}
@@ -742,48 +942,66 @@ Return ONLY valid JSON:
   }
 }
 
+function copyAngle(btnId,idx,id){
+  const el=document.getElementById('at-'+id+'-'+idx);
+  if(el)copyText(btnId,el.textContent);
+}
+
 // ─── COPY / EXPORT ────────────────────────────────────────────────────────
 function copyText(btnId,text){
-  const go=()=>{const el=document.createElement('textarea');el.value=text;el.style.cssText='position:fixed;opacity:0';document.body.appendChild(el);el.focus();el.select();try{document.execCommand('copy');}catch{}document.body.removeChild(el);};
-  if(navigator.clipboard?.writeText)navigator.clipboard.writeText(text).catch(go);else go();
-  if(btnId){const b=document.getElementById(btnId);if(b){const o=b.textContent;b.textContent='✓';b.classList.add('done');setTimeout(()=>{b.textContent=o;b.classList.remove('done');},1600);}}
+  const go=function(){const el=document.createElement('textarea');el.value=text;el.style.cssText='position:fixed;opacity:0';document.body.appendChild(el);el.focus();el.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(el);};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text).catch(go);else go();
+  if(btnId){const b=document.getElementById(btnId);if(b){const o=b.textContent;b.textContent='✓';b.classList.add('done');setTimeout(function(){b.textContent=o;b.classList.remove('done');},1600);}}
 }
 
 function copyPrompt(id){
   const p=S.prompts[id];if(!p)return;
-  copyText(`cpbtn-${id}`,p.prompt||p.ae_brief||'');
+  copyText('cpbtn-'+id,p.prompt||p.ae_brief||'');
 }
 
 function copyAll(){
   const lines=[];
-  Object.entries(S.prompts).forEach(([id,p])=>{
-    const sc=S.shotList?.scenes.find(s=>s.id==id);
-    lines.push(`=== Сцена ${id}${sc?` · ${sc.duration_est}`:''} [${p.type.toUpperCase()}] ===`);
-    if(sc)lines.push(`"${sc.excerpt}…"`);
+  Object.entries(S.prompts).forEach(function(entry){
+    const id=entry[0],p=entry[1];
+    const sc=S.shotList&&S.shotList.scenes.find(function(s){return s.id==id;});
+    const timeStr=sc&&sc.start_time?(' · '+sc.start_time+'–'+sc.end_time):'';
+    lines.push('=== Сцена '+id+timeStr+' ['+p.type.toUpperCase()+'] ===');
+    if(sc)lines.push('"'+sc.excerpt+'…"');
     lines.push('');
-    lines.push(p.type==='ae'?`[AE] ${p.ae_brief||''}`:p.prompt||'');
-    if(p.angles?.length)p.angles.forEach(a=>lines.push(`\n[${a.label}]\n${a.prompt}`));
+    lines.push(p.type==='ae'?('[AE] '+(p.ae_brief||'')):(p.prompt||''));
+    if(p.angles&&p.angles.length)p.angles.forEach(function(a){lines.push('\n['+a.label+']\n'+a.prompt);});
     lines.push('');
   });
   copyText(null,lines.join('\n'));
   const btns=document.querySelectorAll('.export-bar .btn-ghost');
-  if(btns[0]){const o=btns[0].textContent;btns[0].textContent='✓ Скопировано';setTimeout(()=>btns[0].textContent=o,1600);}
+  if(btns[0]){const o=btns[0].textContent;btns[0].textContent='✓ Скопировано';setTimeout(function(){btns[0].textContent=o;},1600);}
 }
 
 function exportCowork(){
-  const aiItems=Object.entries(S.prompts).filter(([,p])=>p.type!=='ae'&&p.prompt).map(([id,p])=>{
-    const sc=S.shotList?.scenes.find(s=>s.id==id);
-    return `--- Сцена ${id}${sc?` (${sc.duration_est})`:''} ---\n${p.prompt}`;
+  const aiItems=Object.entries(S.prompts).filter(function(e){return e[1].type!=='ae'&&e[1].prompt;}).map(function(e){
+    const id=e[0],p=e[1];
+    const sc=S.shotList&&S.shotList.scenes.find(function(s){return s.id==id;});
+    const t=sc&&sc.start_time?(' ('+sc.start_time+'–'+sc.end_time+')'):'';
+    return '--- Сцена '+id+t+' ---\n'+p.prompt;
   });
-  const text=`Открой https://labs.google/fx/ru/tools/flow\n\nДля каждого промта по очереди:\n1. Вставь промт\n2. Нажми Generate\n3. Дождись результата\n4. Скачай изображение\n5. Следующий\n\nПРОМТЫ (${aiItems.length} сцен):\n\n${aiItems.join('\n\n')}`;
+  const text='Открой https://labs.google/fx/ru/tools/flow\n\nПРОМТЫ ('+aiItems.length+' сцен):\n\n'+aiItems.join('\n\n');
   copyText(null,text);
   const btns=document.querySelectorAll('.export-bar .btn-ghost');
-  if(btns[1]){const o=btns[1].textContent;btns[1].textContent=`✓ Скопировано (${aiItems.length})`;setTimeout(()=>btns[1].textContent=o,2000);}
+  if(btns[1]){const o=btns[1].textContent;btns[1].textContent='✓ Скопировано ('+aiItems.length+')';setTimeout(function(){btns[1].textContent=o;},2000);}
 }
 
 function exportJSON(){
-  const data={project:{type:S.projectType,tone:S.tone,styleNotes:S.styleNotes},analysis:S.shotList,prompts:Object.entries(S.prompts).map(([id,p])=>({id:+id,scene:S.shotList?.scenes.find(s=>s.id==id),...p}))};
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download='promptforge.json';a.click();
+  const data={
+    project:{type:S.projectType,tone:S.tone,styleNotes:S.styleNotes,videoDuration:S.videoDurationSec},
+    analysis:S.shotList,
+    prompts:Object.entries(S.prompts).map(function(e){
+      const id=e[0],p=e[1];
+      return Object.assign({id:+id,scene:S.shotList&&S.shotList.scenes.find(function(s){return s.id==id;})||null},p);
+    })
+  };
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+  a.download='promptforge.json';a.click();
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────
