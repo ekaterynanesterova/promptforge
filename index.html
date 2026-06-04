@@ -456,16 +456,33 @@ function safeParseJSON(raw){
   let depth=0,last=-1,inS=false,esc=false;
   for(let i=0;i<s.length;i++){const c=s[i];if(esc){esc=false;continue;}if(c==='\\'){esc=true;continue;}if(c==='"'&&!esc){inS=!inS;continue;}if(inS)continue;if(c==='{'||c==='[')depth++;if(c==='}'||c===']'){depth--;if(depth===0)last=i;}}
   if(last>0){try{return JSON.parse(fix(s.substring(0,last+1)));}catch(e){}}
-  throw new Error('Не удалось разобрать ответ Gemini');
+  console.error('[safeParseJSON] raw (first 500):', s.slice(0,500));
+  throw new Error('Не удалось разобрать ответ Gemini. Открой консоль (F12) чтобы увидеть детали.');
 }
 
-function getGeminiText(data){return data?.candidates?.[0]?.content?.parts?.find(p=>!p.thought)?.text||'';}
+function getGeminiText(data){
+  const parts=data?.candidates?.[0]?.content?.parts||[];
+  const txt=parts.find(p=>!p.thought)?.text||'';
+  if(!txt&&parts.length){
+    console.warn('[Gemini] parts:', JSON.stringify(parts).slice(0,300));
+    console.warn('[Gemini] finishReason:', data?.candidates?.[0]?.finishReason);
+  }
+  return txt;
+}
 
 async function geminiCall(prompt,maxTokens=12000){
   const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${S.apiKey}`,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.4,maxOutputTokens:maxTokens,responseMimeType:'application/json'}})
+    body:JSON.stringify({
+      contents:[{parts:[{text:prompt}]}],
+      generationConfig:{
+        temperature:0.4,
+        maxOutputTokens:maxTokens,
+        responseMimeType:'application/json',
+        thinkingConfig:{thinkingBudget:0}
+      }
+    })
   });
   const data=await res.json();
   if(!res.ok)throw new Error(data?.error?.message||`HTTP ${res.status}`);
