@@ -189,7 +189,7 @@ canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:n
     <span class="api-status" id="apiStatus">Gemini API не настроен</span>
   </div>
   <div class="api-right" id="apiRight">
-    <input type="password" class="api-input" id="apiKeyInput" placeholder="Gemini API ключ...">
+    <input type="password" class="api-input" id="apiKeyInput" placeholder="Один или несколько ключей через запятую...">
     <button class="api-toggle" id="apiToggle">&#128065;</button>
     <button class="api-save" id="apiSaveBtn">Сохранить</button>
   </div>
@@ -294,7 +294,7 @@ canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:n
 <script>
 // ─── STATE ────────────────────────────────────────────────────────────────
 const S={
-  apiKey:'',apiSaved:false,showKey:false,
+  apiKey:'',apiKeys:[],apiKeyIdx:0,apiSaved:false,showKey:false,
   projectType:'space',projectTypeCustom:'',
   tone:35,styleNotes:'',
   voiceoverText:'',videoDurationSec:0,
@@ -381,20 +381,50 @@ document.getElementById('apiKeyInput').addEventListener('keydown',e=>{if(e.key==
 
 function saveKey(){
   const v=document.getElementById('apiKeyInput').value.trim();
-  if(v.length<10)return;
-  S.apiKey=v;S.apiSaved=true;
-  document.getElementById('apiDot').classList.add('on');
-  document.getElementById('apiStatus').textContent='Gemini API подключён';
-  document.getElementById('apiRight').innerHTML='<span class="api-masked">'+('•'.repeat(12))+' '+v.slice(-6)+'</span><button class="api-change" onclick="resetKey()">Изменить</button>';
+  if(!v)return;
+  const keys=v.split(',').map(function(k){return k.trim();}).filter(function(k){return k.length>10;});
+  if(!keys.length)return;
+  S.apiKeys=keys;S.apiKeyIdx=0;S.apiKey=keys[0];S.apiSaved=true;
+  localStorage.setItem('pf_api_keys',keys.join(','));
+  updateKeyStatus();
 }
+
+function updateKeyStatus(){
+  const keys=S.apiKeys;const idx=S.apiKeyIdx;
+  const label=keys.length>1?'Gemini API · ключ '+(idx+1)+' из '+keys.length:'Gemini API подключён';
+  const masked='•'.repeat(10)+' '+keys[idx].slice(-4);
+  document.getElementById('apiDot').classList.add('on');
+  document.getElementById('apiStatus').textContent=label;
+  document.getElementById('apiRight').innerHTML=
+    '<span class="api-masked">'+masked+'</span>'+
+    (keys.length>1?'<button class="api-change" onclick="nextKey()">Следующий</button>':'')+
+    '<button class="api-change" onclick="resetKey()">Изменить</button>';
+}
+
+function nextKey(){
+  S.apiKeyIdx=(S.apiKeyIdx+1)%S.apiKeys.length;
+  S.apiKey=S.apiKeys[S.apiKeyIdx];
+  updateKeyStatus();
+}
+
 function resetKey(){
-  S.apiKey='';S.apiSaved=false;
+  S.apiKey='';S.apiKeys=[];S.apiKeyIdx=0;S.apiSaved=false;
+  localStorage.removeItem('pf_api_keys');
   document.getElementById('apiDot').classList.remove('on');
   document.getElementById('apiStatus').textContent='Gemini API не настроен';
-  document.getElementById('apiRight').innerHTML='<input type="password" class="api-input" id="apiKeyInput" placeholder="Gemini API ключ..."><button class="api-toggle" id="apiToggle">&#128065;</button><button class="api-save" id="apiSaveBtn">Сохранить</button>';
+  document.getElementById('apiRight').innerHTML='<input type="password" class="api-input" id="apiKeyInput" placeholder="Один или несколько ключей через запятую..."><button class="api-toggle" id="apiToggle">&#128065;</button><button class="api-save" id="apiSaveBtn">Сохранить</button>';
   document.getElementById('apiSaveBtn').onclick=saveKey;
-  document.getElementById('apiToggle').onclick=()=>{S.showKey=!S.showKey;document.getElementById('apiKeyInput').type=S.showKey?'text':'password';document.getElementById('apiToggle').textContent=S.showKey?'&#128584;':'&#128065;';};
-  document.getElementById('apiKeyInput').addEventListener('keydown',e=>{if(e.key==='Enter')saveKey();});
+  document.getElementById('apiToggle').onclick=function(){S.showKey=!S.showKey;document.getElementById('apiKeyInput').type=S.showKey?'text':'password';document.getElementById('apiToggle').textContent=S.showKey?'&#128584;':'&#128065;';};
+  document.getElementById('apiKeyInput').addEventListener('keydown',function(e){if(e.key==='Enter')saveKey();});
+}
+
+function loadSavedKeys(){
+  const saved=localStorage.getItem('pf_api_keys');
+  if(!saved)return;
+  const keys=saved.split(',').map(function(k){return k.trim();}).filter(function(k){return k.length>10;});
+  if(!keys.length)return;
+  S.apiKeys=keys;S.apiKeyIdx=0;S.apiKey=keys[0];S.apiSaved=true;
+  updateKeyStatus();
 }
 
 // ─── TYPE GRID ────────────────────────────────────────────────────────────
@@ -657,9 +687,11 @@ async function countdown(sec,txtElId){
 
 async function geminiCall(prompt,maxTokens,statusElId){
   if(!maxTokens)maxTokens=12000;
-  const MAX_RETRIES=3;
+  const txtId=statusElId||'analyzeTxt';
+  const MAX_RETRIES=S.apiKeys.length*2||3;
   for(let attempt=0;attempt<MAX_RETRIES;attempt++){
-    const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+S.apiKey,{
+    const key=S.apiKey;
+    const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+key,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
@@ -675,15 +707,28 @@ async function geminiCall(prompt,maxTokens,statusElId){
     const data=await res.json();
     if(res.ok)return getGeminiText(data);
     const msg=(data&&data.error&&data.error.message)||'HTTP '+res.status;
-    if(isRateLimit(msg)&&attempt<MAX_RETRIES-1){
-      const wait=parseRetryDelay(msg);
-      await countdown(wait,statusElId||'analyzeTxt');
-      const el=document.getElementById(statusElId||'analyzeTxt');
-      if(el)el.textContent='Повторяю запрос...';
-      continue;
+    if(isRateLimit(msg)){
+      // Try next key first if available
+      if(S.apiKeys.length>1){
+        const oldIdx=S.apiKeyIdx;
+        nextKey();
+        const el=document.getElementById(txtId);
+        if(el)el.textContent='Лимит на ключе '+(oldIdx+1)+', переключаюсь на ключ '+(S.apiKeyIdx+1)+'...';
+        await new Promise(function(r){setTimeout(r,1000);});
+        continue;
+      }
+      // Only one key — wait and retry
+      if(attempt<MAX_RETRIES-1){
+        const wait=parseRetryDelay(msg);
+        await countdown(wait,txtId);
+        const el=document.getElementById(txtId);
+        if(el)el.textContent='Повторяю запрос...';
+        continue;
+      }
     }
     throw new Error(msg);
   }
+  throw new Error('Превышены все попытки. Проверь API ключи.');
 }
 
 // ─── ANALYZE SCRIPT ───────────────────────────────────────────────────────
@@ -1054,6 +1099,7 @@ function exportJSON(){
 // ─── INIT ─────────────────────────────────────────────────────────────────
 initTypes();
 initStyleChips();
+loadSavedKeys();
 </script>
 </body>
 </html>
