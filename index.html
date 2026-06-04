@@ -670,11 +670,15 @@ function getGeminiText(data){
 
 function parseRetryDelay(msg){
   const m=(msg||'').match(/retry in (\d+(?:\.\d+)?)s/i);
-  return m?Math.ceil(parseFloat(m[1]))+2:62;
+  if(m)return Math.ceil(parseFloat(m[1]))+2;
+  const low=(msg||'').toLowerCase();
+  if(low.indexOf('high demand')>-1||low.indexOf('overloaded')>-1||low.indexOf('try again')>-1)return randPause(15,30);
+  return 62;
 }
 
 function isRateLimit(msg){
-  return (msg||'').indexOf('quota')>-1||(msg||'').indexOf('RESOURCE_EXHAUSTED')>-1||(msg||'').indexOf('rate')>-1;
+  const m=(msg||'').toLowerCase();
+  return m.indexOf('quota')>-1||m.indexOf('resource_exhausted')>-1||m.indexOf('rate')>-1||m.indexOf('high demand')>-1||m.indexOf('overloaded')>-1||m.indexOf('try again')>-1||m.indexOf('temporarily')>-1||m.indexOf('503')>-1||m.indexOf('529')>-1;
 }
 
 async function countdown(sec,txtElId){
