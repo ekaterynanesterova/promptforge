@@ -6,6 +6,7 @@
 <title>PromptForge</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23010610'/%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%234a9eff' stroke-width='1' opacity='0.25'/%3E%3Ccircle cx='16' cy='16' r='7' fill='rgba(74,158,255,0.08)' stroke='%234a9eff' stroke-width='1.2' opacity='0.6'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='%234a9eff'/%3E%3Cline x1='16' y1='2' x2='16' y2='8' stroke='%234a9eff' stroke-width='1.2' opacity='0.5'/%3E%3Cline x1='16' y1='24' x2='16' y2='30' stroke='%234a9eff' stroke-width='1.2' opacity='0.5'/%3E%3Cline x1='2' y1='16' x2='8' y2='16' stroke='%234a9eff' stroke-width='1.2' opacity='0.5'/%3E%3Cline x1='24' y1='16' x2='30' y2='16' stroke='%234a9eff' stroke-width='1.2' opacity='0.5'/%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{min-height:100vh;background:linear-gradient(160deg,#010610 0%,#030d1e 55%,#020a18 100%);font-family:'Courier New',monospace;color:#8ab0d0;overflow-x:hidden}
@@ -358,30 +359,54 @@ dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');co
 document.getElementById('docxInput').onchange=function(){if(this.files[0])loadDocx(this.files[0]);};
 
 function loadDocx(file){
-  if(typeof mammoth==='undefined'){
-    alert('Библиотека для чтения .docx не загрузилась. Вставь текст вручную.');
-    return;
-  }
+  if(typeof mammoth==='undefined'){alert('Библиотека для чтения .docx не загрузилась. Вставь текст вручную.');return;}
   dz.innerHTML=`<span class="drop-icon">⏳</span><span class="drop-text">Читаю ${file.name}...</span>`;
   const r=new FileReader();
   r.onerror=()=>{dz.innerHTML=`<span class="drop-icon">❌</span><span class="drop-text">Ошибка чтения файла</span>`;};
-  r.onload=e=>{
-    mammoth.convertToHtml({arrayBuffer:e.target.result})
-      .then(res=>{
-        const div=document.createElement('div');div.innerHTML=res.value;
-        const text=(div.textContent||div.innerText||'').trim();
-        if(!text){
-          dz.innerHTML=`<span class="drop-icon">⚠️</span><span class="drop-text">Файл пустой или не читается</span><span class="drop-sub">Попробуй вставить текст вручную</span>`;
-          return;
-        }
-        document.getElementById('scriptText').value=text;
-        updateWordCount();
-        const wc=text.split(/\s+/).filter(Boolean).length;
-        dz.innerHTML=`<span class="drop-icon">✅</span><span class="drop-text">${file.name}</span><span class="drop-sub">Загружено · ${wc} слов</span>`;
-      })
-      .catch(err=>{
-        dz.innerHTML=`<span class="drop-icon">❌</span><span class="drop-text">Не удалось прочитать .docx</span><span class="drop-sub">${err.message||'Неизвестная ошибка'}</span>`;
-      });
+  r.onload=async e=>{
+    const buf=e.target.result;
+    try{
+      // Основной текст через mammoth
+      const html=await mammoth.convertToHtml({arrayBuffer:buf});
+      const div=document.createElement('div');div.innerHTML=html.value;
+      const mainText=(div.textContent||div.innerText||'').trim();
+      if(!mainText){dz.innerHTML=`<span class="drop-icon">⚠️</span><span class="drop-text">Файл пустой или не читается</span>`;return;}
+
+      // Комментарии автора через JSZip
+      let commentsBlock='';
+      if(typeof JSZip!=='undefined'){
+        try{
+          const zip=await new JSZip().loadAsync(buf);
+          const commentsFile=zip.file('word/comments.xml');
+          if(commentsFile){
+            const xml=await commentsFile.async('text');
+            // Извлекаем текст комментариев через regex (обходим проблемы с namespace)
+            const comments=[];
+            const commentRx=/<w:comment\b[^>]*>([\s\S]*?)<\/w:comment>/g;
+            const textRx=/<w:t[^>]*>([^<]+)<\/w:t>/g;
+            let cm;
+            while((cm=commentRx.exec(xml))!==null){
+              const parts=[];let tm;const inner=cm[1];textRx.lastIndex=0;
+              while((tm=textRx.exec(inner))!==null)if(tm[1].trim())parts.push(tm[1]);
+              if(parts.length)comments.push(parts.join(' '));
+            }
+            if(comments.length){
+              commentsBlock='\n\n---\nКОММЕНТАРИИ АВТОРА (из Word):\n'+comments.map((c,i)=>`[${i+1}] ${c}`).join('\n');
+            }
+          }
+        }catch(e){/* комментарии не критичны */}
+      }
+
+      const fullText=mainText+commentsBlock;
+      document.getElementById('scriptText').value=fullText;
+      updateWordCount();
+      const wc=fullText.split(/\s+/).filter(Boolean).length;
+      const hasComments=commentsBlock.length>0;
+      const cmCount=commentsBlock?commentsBlock.split('\n').filter(l=>l.match(/^\[\d+\]/)).length:0;
+      dz.innerHTML=`<span class="drop-icon">✅</span><span class="drop-text">${file.name}</span><span class="drop-sub">${wc} слов${hasComments?` · ${cmCount} комментариев автора':''}</span>`;
+    }catch(err){
+      dz.innerHTML=`<span class="drop-icon">❌</span><span class="drop-text">Не удалось прочитать .docx</span><span class="drop-sub">${err.message||''}</span>`;
+    }
   };
   r.readAsArrayBuffer(file);
 }
