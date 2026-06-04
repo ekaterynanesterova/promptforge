@@ -732,6 +732,17 @@ async function geminiCall(prompt,maxTokens,statusElId){
 }
 
 // ─── ANALYZE SCRIPT ───────────────────────────────────────────────────────
+function randPause(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+
+function splitIntoChunks(text,wordsPerChunk){
+  const words=text.split(/\s+/);
+  const chunks=[];
+  for(let i=0;i<words.length;i+=wordsPerChunk){
+    chunks.push(words.slice(i,i+wordsPerChunk).join(' '));
+  }
+  return chunks;
+}
+
 async function analyzeScript(){
   const script=document.getElementById('scriptText').value.trim();
   if(!script){alert('Сначала загрузи или вставь текст сценария');return;}
@@ -741,33 +752,60 @@ async function analyzeScript(){
   btn.disabled=true;btn.textContent='АНАЛИЗИРУЮ...';btn.style.animation='blink 1s infinite';
   document.getElementById('analyzeError').style.display='none';
   document.getElementById('analyzeLoad').style.display='block';
-  document.getElementById('analyzeTxt').textContent='Анализирую сценарий...';
 
   const timing=calcTiming();
-  let timingNote='Each scene should be ~8-12 seconds and ~25-40 words.';
+  let timingNote='Each scene = ONE visual shot, max 10 seconds, ~25-40 words.';
   let timingSchema='"start_time":"0:00","end_time":"0:10"';
   if(timing){
     const wps=timing.secPerWord>0?Math.round(8/timing.secPerWord):30;
-    timingNote='Video total duration: '+fmtTime(timing.totalSecs)+'. Voiceover has '+timing.totalWords+' words. Each visual shot = max 10 seconds = ~'+wps+' words. Calculate start_time and end_time for each scene based on word position in the voiceover text.';
+    timingNote='Video total duration: '+fmtTime(timing.totalSecs)+'. Voiceover: '+timing.totalWords+' words. Each shot = max 10 sec = ~'+wps+' words. Calculate start_time/end_time based on word position.';
   }
 
-  const voiceoverSection=S.voiceoverText?'\n\nVOICEOVER TEXT (use for timing calculation):\n'+S.voiceoverText:'';
-
-  const prompt='You are a professional director and editor for science documentary video.\n\nAnalyze this script and divide it into visual scenes. Each scene = ONE visual shot, max 10 seconds.\n\n'+timingNote+'\n\nFor each scene, classify as:\n"ai" - Generate with AI image tool:\n  · Cinematic scenes with clear visual action\n  · Atmospheric shots, environments, space, creatures\n  · Any scene benefiting from photorealistic imagery\n  · Author comments say "animation", "show", "visual", "beautiful"\n\n"ae" - After Effects / Motion Graphics:\n  · Exact scale/size comparisons with numbers\n  · Infographics, timelines, diagrams, charts\n  · Data visualization with precise values\n  · Text-heavy explanations\n\n"hybrid" - AI base + After Effects overlay:\n  · Needs both cinematic imagery AND text/data on top\n\nProject context: '+styleCtx()+'\n\nReturn ONLY valid JSON:\n{"total_scenes":N,"ai_count":N,"ae_count":N,"hybrid_count":N,"scenes":[{"id":1,"excerpt":"first 8-10 words verbatim","type":"ai","reason":"one sentence","description":"what to show visually",'+timingSchema+'}]}'+'\n\nSCRIPT:\n'+script+voiceoverSection;
+  const classifyPrompt=function(chunk,chunkIdx,totalChunks,idStart){
+    return 'You are a professional director for science documentary video.\n\nAnalyze this script SECTION ('+(chunkIdx+1)+' of '+totalChunks+') and divide into visual shots.\n\n'+timingNote+'\n\nClassify each shot:\n"ai" - AI image generation: cinematic action, environments, space, creatures, photorealistic imagery\n"ae" - After Effects: scale comparisons with numbers, infographics, charts, data visualization\n"hybrid" - AI base + abstract AE overlay (glowing rings, trajectory lines — NO readable text)\n\nAuthor comments in [КОММЕНТАРИЙ: ...] are classification hints — use them.\n\nProject context: '+styleCtx()+'\n\nStart scene IDs from '+idStart+'.\n\nReturn ONLY valid JSON:\n{"scenes":[{"id":'+idStart+',"excerpt":"first 8-10 words verbatim","type":"ai","reason":"one sentence","description":"what to show visually",'+timingSchema+'}]}\n\nSCRIPT SECTION:\n'+chunk;
+  };
 
   try{
-    const raw=await geminiCall(prompt,18000,'analyzeTxt');
-    const data=safeParseJSON(raw);
-    if(!data.scenes||!data.scenes.length)throw new Error('Нет сцен в ответе');
-    S.shotList=data;
-    S.selectedIds=new Set();
-    S.prompts={};
-    renderShotList();
-    document.getElementById('shotSection').style.display='block';
+    const WORDS_PER_CHUNK=500;
+    const chunks=splitIntoChunks(script,WORDS_PER_CHUNK);
+    const totalChunks=chunks.length;
+    let allScenes=[];
+    let idCounter=1;
+
+    for(let i=0;i<chunks.length;i++){
+      const pause=randPause(5,10);
+      document.getElementById('analyzeTxt').textContent=
+        'Анализирую часть '+(i+1)+' из '+totalChunks+'...';
+
+      const raw=await geminiCall(classifyPrompt(chunks[i],i,totalChunks,idCounter),10000,'analyzeTxt');
+      const data=safeParseJSON(raw);
+      if(data.scenes&&data.scenes.length){
+        allScenes=allScenes.concat(data.scenes);
+        idCounter=allScenes.length+1;
+        // Show partial results immediately
+        S.shotList={scenes:allScenes,total_scenes:allScenes.length,
+          ai_count:allScenes.filter(function(s){return s.type==='ai';}).length,
+          ae_count:allScenes.filter(function(s){return s.type==='ae';}).length,
+          hybrid_count:allScenes.filter(function(s){return s.type==='hybrid';}).length};
+        S.selectedIds=new Set();S.prompts={};
+        renderShotList();
+        document.getElementById('shotSection').style.display='block';
+      }
+
+      if(i<chunks.length-1){
+        for(let c=pause;c>0;c--){
+          document.getElementById('analyzeTxt').textContent=
+            'Часть '+(i+1)+' готова · пауза '+c+'с перед следующей...';
+          await new Promise(function(r){setTimeout(r,1000);});
+        }
+      }
+    }
+
     document.getElementById('promptSection').style.display='none';
     document.getElementById('promptList').innerHTML='';
     document.getElementById('exportBar').innerHTML='';
     setTimeout(function(){document.getElementById('shotSection').scrollIntoView({behavior:'smooth',block:'start'});},100);
+
   }catch(e){
     document.getElementById('analyzeError').textContent='Ошибка анализа: '+e.message;
     document.getElementById('analyzeError').style.display='block';
