@@ -743,10 +743,10 @@ async function generateImage(key, prompt){
 
   const model=STATE.imgModel||'black-forest-labs/FLUX.1-schnell';
   try{
-    const res=await fetch(`https://api-inference.huggingface.co/models/${model}`,{
+    const res=await fetch(`https://router.huggingface.co/hf-inference/models/${model}/v1/text-to-image`,{
       method:'POST',
       headers:{'Authorization':`Bearer ${STATE.hfKey}`,'Content-Type':'application/json'},
-      body:JSON.stringify({inputs:prompt})
+      body:JSON.stringify({inputs:prompt,parameters:{width:1280,height:720}})
     });
     if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error||`HTTP ${res.status}`);}
     const blob=await res.blob();
