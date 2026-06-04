@@ -692,7 +692,7 @@ async function countdown(sec,txtElId){
 async function geminiCall(prompt,maxTokens,statusElId){
   if(!maxTokens)maxTokens=12000;
   const txtId=statusElId||'analyzeTxt';
-  const MAX_RETRIES=S.apiKeys.length*2||3;
+  const MAX_RETRIES=Math.max(6,S.apiKeys.length*2);
   for(let attempt=0;attempt<MAX_RETRIES;attempt++){
     const key=S.apiKey;
     const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+key,{
@@ -721,12 +721,13 @@ async function geminiCall(prompt,maxTokens,statusElId){
         await new Promise(function(r){setTimeout(r,1000);});
         continue;
       }
-      // Only one key — wait and retry
+      // Wait and retry with increasing delay
       if(attempt<MAX_RETRIES-1){
-        const wait=parseRetryDelay(msg);
+        const baseWait=parseRetryDelay(msg);
+        const wait=Math.min(baseWait*(attempt+1),120)+randPause(0,5);
         await countdown(wait,txtId);
         const el=document.getElementById(txtId);
-        if(el)el.textContent='Повторяю запрос...';
+        if(el)el.textContent='Повторяю запрос (попытка '+(attempt+2)+')...';
         continue;
       }
     }
