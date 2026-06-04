@@ -366,9 +366,10 @@ function loadDocx(file){
   const r=new FileReader();
   r.onerror=()=>{dz.innerHTML=`<span class="drop-icon">❌</span><span class="drop-text">Ошибка чтения файла</span>`;};
   r.onload=e=>{
-    mammoth.extractRawValue({arrayBuffer:e.target.result})
+    mammoth.convertToHtml({arrayBuffer:e.target.result})
       .then(res=>{
-        const text=res.value.trim();
+        const div=document.createElement('div');div.innerHTML=res.value;
+        const text=(div.textContent||div.innerText||'').trim();
         if(!text){
           dz.innerHTML=`<span class="drop-icon">⚠️</span><span class="drop-text">Файл пустой или не читается</span><span class="drop-sub">Попробуй вставить текст вручную</span>`;
           return;
