@@ -105,7 +105,8 @@ canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:n
 .btn-primary{width:100%;background:linear-gradient(135deg,#142e66,#0a1a3e);border:1px solid rgba(70,130,255,0.4);color:#80b8f0;font-size:11px;letter-spacing:4px;padding:14px;border-radius:2px}
 .btn-primary:disabled{opacity:0.35;cursor:not-allowed}
 .btn-ghost{background:transparent;border:1px solid rgba(60,120,255,0.28);color:rgba(140,190,255,0.75);font-size:9px;letter-spacing:2px;padding:6px 14px;border-radius:2px}
-.btn-sm{background:rgba(60,120,255,0.08);border:1px solid rgba(60,120,255,0.22);color:rgba(140,190,255,0.75);font-size:8px;letter-spacing:1px;padding:4px 10px;border-radius:2px;white-space:nowrap}
+.btn-sm{background:rgba(60,120,255,0.08);border:1px solid rgba(60,120,255,0.22);color:rgba(140,190,255,0.75);font-size:8px;letter-spacing:1px;padding:4px 10px;border-radius:2px;white-space:nowrap;cursor:pointer;transition:all 0.15s}
+.btn-sm.active{background:rgba(74,158,255,0.2);border-color:rgba(74,158,255,0.6);color:#b8dcff}
 .btn-sm.done{color:rgba(60,200,100,0.8);border-color:rgba(60,200,100,0.2)}
 .btn-sm.expand{background:rgba(74,158,255,0.08);border-color:rgba(74,158,255,0.2);color:rgba(100,170,255,0.7)}
 .btn-sm.spinning span{display:inline-block;animation:spin 1s linear infinite}
@@ -997,6 +998,7 @@ function renderShotList(){
     const endIdx=Math.min(i+10,scenes.length);
     const b=document.createElement('button');
     b.className='btn-sm';b.textContent=(i+1)+'–'+endIdx;
+    b.dataset.from=i;b.dataset.to=endIdx;
     b.onclick=(function(f,t){return function(){selRange(f,t);};})(i,endIdx);
     qr.appendChild(b);
   }
@@ -1031,7 +1033,24 @@ function renderShotList(){
   updateGenBtn();
 }
 
-function selRange(from,to){pushSelHistory();S.shotList.scenes.slice(from,to).forEach(function(s){S.selectedIds.add(s.id);});updateCards();updateGenBtn();}
+function selRange(from,to){
+  const ids=S.shotList.scenes.slice(from,to).map(function(s){return s.id;});
+  const allSel=ids.every(function(id){return S.selectedIds.has(id);});
+  pushSelHistory();
+  if(allSel){ids.forEach(function(id){S.selectedIds.delete(id);});}
+  else{ids.forEach(function(id){S.selectedIds.add(id);});}
+  updateCards();updateGenBtn();updateRangeBtns();
+}
+function updateRangeBtns(){
+  const qr=document.getElementById('quickRow');
+  if(!qr||!S.shotList)return;
+  qr.querySelectorAll('.btn-sm[data-from]').forEach(function(b){
+    const f=+b.dataset.from,t=+b.dataset.to;
+    const ids=S.shotList.scenes.slice(f,t).map(function(s){return s.id;});
+    const allSel=ids.length>0&&ids.every(function(id){return S.selectedIds.has(id);});
+    if(allSel)b.classList.add('active');else b.classList.remove('active');
+  });
+}
 function toggleSc(id){pushSelHistory();if(S.selectedIds.has(id))S.selectedIds.delete(id);else S.selectedIds.add(id);updateCards();updateGenBtn();}
 function updateCards(){
   S.shotList.scenes.forEach(function(s){
@@ -1040,6 +1059,7 @@ function updateCards(){
     if(S.selectedIds.has(s.id)){card.classList.add('selected');chk.textContent='✓';}
     else{card.classList.remove('selected');chk.textContent='';}
   });
+  updateRangeBtns();
 }
 function updateGenBtn(){
   const wrap=document.getElementById('generateBtnWrap');
