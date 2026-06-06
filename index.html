@@ -856,48 +856,59 @@ async function countdown(sec,txtElId){
 async function geminiCall(prompt,maxTokens,statusElId){
   if(!maxTokens)maxTokens=12000;
   const txtId=statusElId||'analyzeTxt';
-  const MAX_RETRIES=Math.max(6,S.apiKeys.length*2);
-  for(let attempt=0;attempt<MAX_RETRIES;attempt++){
-    const key=S.apiKey;
+  const nKeys=Math.max(1,S.apiKeys.length);
+  // паузы между раундами в секундах: после раунда 0→60с, 1→120с, 2→240с, 3→360с, 4→600с, раунд 5 = последний
+  const ROUND_WAITS=[60,120,240,360,600];
+  const MAX_ROUNDS=6;
+
+  function setStatus(txt){const el=document.getElementById(txtId);if(el)el.textContent=txt;}
+
+  async function tryKey(key){
     const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+key,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         contents:[{parts:[{text:prompt}]}],
-        generationConfig:{
-          temperature:0.4,
-          maxOutputTokens:maxTokens,
-          responseMimeType:'application/json',
-          thinkingConfig:{thinkingBudget:0}
-        }
+        generationConfig:{temperature:0.4,maxOutputTokens:maxTokens,responseMimeType:'application/json',thinkingConfig:{thinkingBudget:0}}
       })
     });
     const data=await res.json();
-    if(res.ok)return getGeminiText(data);
+    if(res.ok){const txt=getGeminiText(data);if(txt)return{ok:true,txt};}
     const msg=(data&&data.error&&data.error.message)||'HTTP '+res.status;
-    if(isRateLimit(msg)){
-      // Try next key first if available
-      if(S.apiKeys.length>1){
-        const oldIdx=S.apiKeyIdx;
-        nextKey();
-        const el=document.getElementById(txtId);
-        if(el)el.textContent='Лимит на ключе '+(oldIdx+1)+', переключаюсь на ключ '+(S.apiKeyIdx+1)+'...';
-        await new Promise(function(r){setTimeout(r,1000);});
-        continue;
-      }
-      // Wait and retry with increasing delay
-      if(attempt<MAX_RETRIES-1){
-        const baseWait=parseRetryDelay(msg);
-        const wait=Math.min(baseWait*(attempt+1),120)+randPause(0,5);
-        await countdown(wait,txtId);
-        const el=document.getElementById(txtId);
-        if(el)el.textContent='Повторяю запрос (попытка '+(attempt+2)+')...';
-        continue;
-      }
-    }
-    throw new Error(msg);
+    return{ok:false,msg,isLimit:isRateLimit(msg)};
   }
-  throw new Error('Превышены все попытки. Проверь API ключи.');
+
+  for(let round=0;round<MAX_ROUNDS;round++){
+    // перебираем все ключи с начального (S.apiKeyIdx)
+    const startIdx=S.apiKeyIdx;
+    for(let k=0;k<nKeys;k++){
+      const keyIdx=(startIdx+k)%nKeys;
+      S.apiKeyIdx=keyIdx;
+      S.apiKey=S.apiKeys[keyIdx];
+      setStatus('Раунд '+(round+1)+'/'+MAX_ROUNDS+' · Ключ '+(keyIdx+1)+'/'+nKeys+'...');
+      const r=await tryKey(S.apiKey);
+      if(r.ok)return r.txt;
+      if(r.isLimit){
+        setStatus('Лимит на ключе '+(keyIdx+1)+'/'+nKeys+(nKeys>1?' → пробую следующий...':' · жду...'));
+        await new Promise(function(res){setTimeout(res,2000);});
+        continue;
+      }
+      // не rate-limit ошибка — бросаем сразу
+      throw new Error(r.msg);
+    }
+    // все ключи исчерпаны в этом раунде
+    if(round<MAX_ROUNDS-1){
+      const waitSec=ROUND_WAITS[round];
+      const mins=Math.floor(waitSec/60),secs=waitSec%60;
+      for(let i=waitSec;i>0;i--){
+        setStatus('Все ключи на лимите. Раунд '+(round+2)+'/'+MAX_ROUNDS+' через '+i+'с (ждём '+(mins>0?mins+'м ':'')+secs+'с)...');
+        await new Promise(function(res){setTimeout(res,1000);});
+      }
+      // после паузы начинаем с ключа 0
+      S.apiKeyIdx=0;S.apiKey=S.apiKeys[0];
+    }
+  }
+  throw new Error('Все '+MAX_ROUNDS+' раундов по '+nKeys+' ключ(ам) исчерпаны. Проверь лимиты API.');
 }
 
 // ─── ANALYZE SCRIPT ───────────────────────────────────────────────────────
