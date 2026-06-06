@@ -328,6 +328,7 @@ canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:n
       <span class="auto-angles-lbl">Сразу генерировать ракурсы</span>
     </label>
     <button class="btn-primary" id="generateBtn" onclick="generatePrompts()">ГЕНЕРИРОВАТЬ ПРОМТЫ ДЛЯ ВЫБРАННЫХ</button>
+    <button class="btn-primary" id="resumeBtn" onclick="generatePrompts(true)" style="display:none;background:rgba(255,160,60,0.15);border-color:rgba(255,160,60,0.5);color:rgba(255,200,100,0.95)">↺ ПРОДОЛЖИТЬ ГЕНЕРАЦИЮ</button>
   </div>
 </div>
 
@@ -356,7 +357,9 @@ const S={
   selHistory:[],
   autoAngles:false,
   styleSelections:{},
-  styleBlockCtx:''
+  styleBlockCtx:'',
+  resumeFrom:null,
+  resumeSelected:null
 };
 
 const TYPES={
@@ -1076,11 +1079,21 @@ function toggleAutoAngles(){
 }
 
 // ─── GENERATE PROMPTS ─────────────────────────────────────────────────────
-async function generatePrompts(){
-  if(!S.selectedIds.size)return;
-  const selected=S.shotList.scenes.filter(function(s){return S.selectedIds.has(s.id);});
+async function generatePrompts(isResume){
+  const resumeBtn=document.getElementById('resumeBtn');
+  let selected,startBatch;
+  if(isResume&&S.resumeSelected&&S.resumeFrom!==null){
+    selected=S.resumeSelected;
+    startBatch=S.resumeFrom;
+  } else {
+    if(!S.selectedIds.size)return;
+    selected=S.shotList.scenes.filter(function(s){return S.selectedIds.has(s.id);});
+    startBatch=0;
+    S.resumeSelected=selected;
+  }
   const btn=document.getElementById('generateBtn');
   btn.disabled=true;btn.style.animation='blink 1s infinite';
+  if(resumeBtn){resumeBtn.style.display='none';}
   document.getElementById('generateError').style.display='none';
   document.getElementById('generateLoad').style.display='block';
 
@@ -1088,10 +1101,12 @@ async function generatePrompts(){
   const styleGuide=styleCtx();
   const instructionPrompt='You are an elite Director of Photography for science documentary film.\n\nStyle guide: '+styleGuide+'\n\nCAMERA SYSTEM — choose the shot type that BEST SERVES the scene content:\n\nSCALE & FRAMING (match to subject size and narrative role):\n- EXTREME WIDE SHOT (EWS): subject tiny against vast environment — use for establishing scale, cosmic events, landscapes. Subject is 5-10% of frame.\n- WIDE SHOT (WS): subject visible in full environment — use for context, journeys, large creatures/objects in habitat.\n- MEDIUM SHOT (MS): subject from waist/mid-body — use for action, interaction, moderate scale subjects.\n- CLOSE-UP (CU): face/key feature fills frame — use for emotion, detail, surface texture, critical moments.\n- EXTREME CLOSE-UP (ECU): single detail — use for microscopic, molecular, texture, abstract beauty of small things.\n\nANGLE (choose based on power dynamic and mood):\n- EYE LEVEL: neutral, equal relationship with subject\n- LOW ANGLE (looking up): subject feels powerful, massive, dominant\n- HIGH ANGLE / OVERHEAD: subject feels small, vulnerable, observed from above\n- DUTCH ANGLE: unease, instability, tension\n- POV: first-person immersion, "you are there"\n\nCAMERA MOVEMENT (match to scene energy):\n- SLOW PUSH-IN / DOLLY: building tension, revelation, growing importance\n- PULL BACK / ZOOM OUT: revealing scale, isolation, context\n- ORBITING / ROTATING around subject: all-around reveal, grandeur\n- STATIC LOCKED: meditative, contemplative, subject moves within frame\n- TRACKING alongside: journey, movement through space\n- CRANE / AERIAL DESCEND or ASCEND: transition between scales\n\nDEPTH OF FIELD:\n- SHALLOW DOF (bokeh background): intimate, isolate subject, poetic\n- DEEP DOF (everything sharp): scientific, everything matters, vast environments\n\nRULES FOR AI PROMPTS:\n- Write ONE cinematic image prompt in English (80-120 words)\n- ALWAYS start with the explicit shot type + angle + movement: e.g. "Extreme close-up, low angle, slow push-in..."\n- Choose shot type logically based on scene content — do not default to wide shots for everything\n- BACKGROUND DISCIPLINE: restrained and intentional. Deep space = sparse stars on true black, not colorful nebula clutter. Think Interstellar, not a screensaver. Color must serve story, not decorate.\n- COLOR RESTRAINT: muted, desaturated palette. One dominant color accent maximum. No oversaturation.\n- NO text, labels, titles, subtitles, overlays, UI elements — pure visual only\n- NO people unless scene explicitly requires it\n- End every AI prompt with: "'+QUALITY_SUFFIX+'"\n\nRULES FOR AE SCENES:\n- Write in Russian (2-3 sentences): what to animate, what data to show\n- Motion graphics only: flowing lines, glowing orbits, pulsing dots, scale comparisons — NO readable text blocks\n\nRULES FOR HYBRID SCENES:\n- Write the AI cinematic prompt (pure visual, no text)\n- Add "// AE overlay:" describing only abstract HUD elements: glowing rings, trajectory lines, pulsing energy fields, geometric overlays — nothing that requires readable text\n\n';
 
+  let failedAt=null;
   try{
     document.getElementById('promptSection').style.display='block';
 
-    for(let i=0;i<selected.length;i+=BATCH){
+    for(let i=startBatch;i<selected.length;i+=BATCH){
+      failedAt=i;
       const batch=selected.slice(i,i+BATCH);
       const total=selected.length;
       const from=i+1;const to=Math.min(i+BATCH,total);
@@ -1108,6 +1123,7 @@ async function generatePrompts(){
       const data=safeParseJSON(raw);
       data.results.forEach(function(r){S.prompts[r.id]=Object.assign({},r,{angles:[]});});
       renderPrompts(batch);
+      failedAt=null;
 
       if(i+BATCH<selected.length){
         const batchPause=randPause(8,15);
@@ -1118,6 +1134,7 @@ async function generatePrompts(){
       }
     }
 
+    S.resumeFrom=null;S.resumeSelected=null;
     saveSession();
     setTimeout(function(){document.getElementById('promptSection').scrollIntoView({behavior:'smooth',block:'start'});},100);
 
@@ -1126,8 +1143,13 @@ async function generatePrompts(){
     }
 
   }catch(e){
-    document.getElementById('generateError').textContent='Ошибка генерации: '+e.message;
-    document.getElementById('generateError').style.display='block';
+    if(failedAt!==null){S.resumeFrom=failedAt;}
+    const errEl=document.getElementById('generateError');
+    const done=failedAt!==null?Math.floor(failedAt/BATCH)*BATCH:selected.length;
+    const remaining=selected.length-done;
+    errEl.textContent='Ошибка генерации: '+e.message+(remaining>0?' (осталось ~'+remaining+' сцен)':'');
+    errEl.style.display='block';
+    if(resumeBtn&&S.resumeFrom!==null){resumeBtn.style.display='block';}
   }finally{
     btn.disabled=false;btn.style.animation='';
     updateGenBtn();
