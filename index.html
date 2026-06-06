@@ -47,9 +47,21 @@ canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:n
 .api-change{background:transparent;border:1px solid rgba(60,120,255,0.25);color:rgba(130,180,255,0.7);font-size:9px;letter-spacing:1px;padding:5px 10px;border-radius:2px}
 
 .type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
-.type-btn{background:rgba(5,12,30,0.8);border:1px solid rgba(60,120,255,0.18);border-radius:3px;padding:12px 8px;text-align:center;color:rgba(160,200,240,0.65);font-size:10px;letter-spacing:1px;line-height:1.6;display:flex;flex-direction:column;align-items:center;gap:4px}
+.type-btn{background:rgba(5,12,30,0.8);border:1px solid rgba(60,120,255,0.18);border-radius:3px;padding:10px 6px;text-align:center;color:rgba(160,200,240,0.65);font-size:10px;letter-spacing:1px;line-height:1.5;display:flex;flex-direction:column;align-items:center;gap:3px;position:relative}
 .type-btn.active{border-color:rgba(74,158,255,0.6);background:rgba(74,158,255,0.1);color:#c0dcf8}
-.type-icon{font-size:22px;line-height:1}
+.type-icon{font-size:20px;line-height:1}
+.type-btn .tip{position:absolute;bottom:calc(100% + 7px);left:50%;transform:translateX(-50%);width:190px;background:#07122a;border:1px solid rgba(74,158,255,0.25);border-radius:3px;padding:7px 10px;font-size:9px;color:rgba(185,220,255,0.85);letter-spacing:0.5px;line-height:1.5;pointer-events:none;opacity:0;transition:opacity 0.15s;z-index:200;text-align:left;white-space:normal}
+.type-btn:hover .tip{opacity:1}
+.type-btn .tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#07122a}
+.style-blocks{display:flex;flex-direction:column;gap:12px;margin-bottom:10px}
+.style-block-lbl{font-size:8px;letter-spacing:2px;color:rgba(150,195,255,0.65);text-transform:uppercase;margin-bottom:5px}
+.style-block-grid{display:flex;gap:6px;flex-wrap:wrap}
+.style-opt{position:relative;background:rgba(5,12,30,0.8);border:1px solid rgba(60,120,255,0.2);border-radius:3px;color:rgba(175,215,255,0.8);font-size:9px;letter-spacing:0.5px;padding:5px 11px;cursor:pointer;transition:all 0.15s;font-family:'Courier New',monospace}
+.style-opt:hover{border-color:rgba(74,158,255,0.5);color:#e8f5ff;background:rgba(74,158,255,0.07)}
+.style-opt.active{border-color:rgba(74,158,255,0.65);background:rgba(74,158,255,0.12);color:#ddf0ff}
+.style-opt .tip{position:absolute;bottom:calc(100% + 7px);left:0;width:210px;background:#07122a;border:1px solid rgba(74,158,255,0.25);border-radius:3px;padding:7px 10px;font-size:9px;color:rgba(185,220,255,0.85);letter-spacing:0.5px;line-height:1.5;pointer-events:none;opacity:0;transition:opacity 0.15s;z-index:200;white-space:normal}
+.style-opt:hover .tip{opacity:1}
+.style-opt .tip::after{content:'';position:absolute;top:100%;left:14px;border:5px solid transparent;border-top-color:#07122a}
 
 .tone-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
 .tone-lbl{font-size:9px;letter-spacing:1px;color:rgba(140,185,255,0.7);white-space:nowrap}
@@ -234,8 +246,8 @@ canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:n
       <span class="tone-val" id="toneVal">Кинематографичный</span>
       <span class="tone-lbl">&#128218; Образовательный</span>
     </div>
-    <div class="style-chips" id="styleChips"></div>
-    <input class="style-input" id="styleNotes" placeholder="Или введи своё...">
+    <div class="style-blocks" id="styleBlocks"></div>
+    <input class="style-input" id="styleNotes" placeholder="Дополнительные пожелания...">
   </div>
 </div>
 
@@ -337,16 +349,22 @@ const S={
   voiceoverText:'',videoDurationSec:0,
   shotList:null,selectedIds:new Set(),
   prompts:{},
-  promptHistory:{},   // id -> [{prompt,ae_brief,angles,label}] last 3
-  selHistory:[],      // stack of Set snapshots for undo
-  autoAngles:false
+  promptHistory:{},
+  selHistory:[],
+  autoAngles:false,
+  styleSelections:{},
+  styleBlockCtx:''
 };
 
 const TYPES={
-  space:     {icon:'&#127756;',label:'Космос',        ctx:'Space exploration, astrophysics, astronomy. NASA/ESA science documentary aesthetic.'},
-  prehistoric:{icon:'&#129429;',label:'Доисторическое',ctx:'Prehistoric life, paleontology, ancient Earth. BBC Prehistoric Planet cinematic style.'},
-  earth:     {icon:'&#127757;',label:'Земля / Природа',ctx:'Earth science, geology, nature. National Geographic / BBC Earth documentary.'},
-  other:     {icon:'&#9999;&#65039;',label:'Другое',  ctx:''}
+  space:      {icon:'&#127756;',label:'Космос',           tip:'Космос, астрофизика, NASA/ESA. Далёкие галактики, туманности, планеты, запуски ракет. Масштаб вселенной.',                                ctx:'Space exploration, astrophysics, astronomy, cosmology. Vast scales, nebulae, planets, spacecraft. NASA/ESA science documentary aesthetic.'},
+  prehistoric:{icon:'&#129429;',label:'Доисторическое',   tip:'Динозавры, палеонтология, древняя Земля. Фотореалистичные существа в среде обитания. Стиль Prehistoric Planet.',                          ctx:'Prehistoric life, paleontology, ancient Earth, dinosaurs, megafauna. Photorealistic creatures in natural habitat. BBC Prehistoric Planet cinematic style.'},
+  earth:      {icon:'&#127757;',label:'Земля / Природа',  tip:'Природа, экосистемы, океаны, горы, леса. Живые цвета, макро-детали, дикая природа. Стиль BBC Earth / NatGeo.',                            ctx:'Earth science, geology, ecosystems, oceans, forests, wildlife. Vibrant colors, macro details. National Geographic / BBC Earth documentary style.'},
+  science:    {icon:'&#129516;',label:'Наука / Технологии',tip:'Физика, химия, биология, AI, инженерия. Абстрактные визуализации данных, молекулы, схемы, футуристические концепции.',                   ctx:'Science, technology, physics, chemistry, biology, AI, engineering. Abstract data visualizations, molecular structures, futuristic concepts, clean scientific aesthetic.'},
+  history:    {icon:'&#127981;',label:'История',           tip:'Исторические события, цивилизации, войны, архитектура. Эпоха передаётся через свет, текстуры, окружение.',                                ctx:'Historical events, ancient civilizations, wars, architecture. Era conveyed through lighting, textures, period-accurate environments. Cinematic historical documentary.'},
+  bedtime:    {icon:'&#127769;',label:'Истории на ночь',   tip:'Сказки, тихие истории, уютный визуал. Мягкий свет, тёплые тона, сказочные пейзажи. Не страшно, даже если мистика.',                       ctx:'Bedtime stories, fairytales, calm soothing visuals. Soft warm lighting, gentle magical landscapes, cozy dreamlike atmosphere. Safe, peaceful, wonder-filled.'},
+  horror:     {icon:'&#128123;',label:'Мистика / Хоррор',  tip:'Тёмная атмосфера, напряжение, загадочность. Глубокие тени, туман, зловещий свет. От лёгкой мистики до настоящего хоррора.',               ctx:'Dark atmospheric horror, mystery, suspense. Deep shadows, fog, eerie lighting, foreboding environments. From subtle unease to full horror aesthetic.'},
+  other:      {icon:'&#9999;&#65039;',label:'Другое',      tip:'Свой жанр — опиши ниже. Подойдёт для документальных проектов, рекламы, обучающего контента или всего что не вписывается в категории.',   ctx:''}
 };
 
 const REGEN_STYLES=[
@@ -376,7 +394,10 @@ function getToneCtx(v){return v<25?'Dramatic, cinematic, moody, atmospheric, epi
 function styleCtx(){
   const pt=TYPES[S.projectType];
   const ctx=S.projectType==='other'?S.projectTypeCustom:pt.ctx;
-  return ctx+' Tone: '+getToneCtx(S.tone)+'.'+(S.styleNotes?' '+S.styleNotes:'');
+  const blocks=S.styleBlockCtx||'';
+  const tone='Tone: '+getToneCtx(S.tone)+'.';
+  const notes=S.styleNotes?S.styleNotes:'';
+  return [ctx,blocks,tone,notes].filter(Boolean).join(' ');
 }
 
 function parseDuration(str){
@@ -473,7 +494,7 @@ function initTypes(){
   Object.entries(TYPES).forEach(([id,t])=>{
     const b=document.createElement('button');
     b.className='type-btn'+(id===S.projectType?' active':'');
-    b.innerHTML='<span class="type-icon">'+t.icon+'</span>'+t.label;
+    b.innerHTML='<span class="type-icon">'+t.icon+'</span>'+t.label+'<span class="tip">'+t.tip+'</span>';
     b.onclick=()=>{
       S.projectType=id;
       document.querySelectorAll('.type-btn').forEach(x=>x.classList.remove('active'));
@@ -486,39 +507,103 @@ function initTypes(){
 document.getElementById('typeCustom').oninput=e=>S.projectTypeCustom=e.target.value;
 document.getElementById('styleNotes').oninput=e=>S.styleNotes=e.target.value;
 
-const STYLE_CHIPS=[
-  {label:'BBC Earth',            tip:'Яркие насыщенные цвета, живая природа, фотографическая точность.'},
-  {label:'BBC Documentary',      tip:'Строгий документальный стиль BBC: серьёзный, информативный, высокое качество.'},
-  {label:'National Geographic',  tip:'NatGeo: насыщенные цвета, золотой журнальный свет, тёплая атмосфера.'},
-  {label:'Prehistoric Planet',   tip:'Apple TV+: фотореализм, мягкое кино-освещение, как будто снято настоящей камерой.'},
-  {label:'Cosmos',               tip:'Грандиозный масштаб вселенной, поэтичный и научный, звёздные пейзажи.'},
-  {label:'How the Universe Works',tip:'Discovery: тёмный космос, взрывы, драматичные цвета, объяснительный стиль.'},
-  {label:'IMAX',                 tip:'Максимальная детализация, сверхширокий кадр, подавляющий масштаб.'},
-  {label:'NASA Visualization',   tip:'Научная точность, реалистичные космические сцены, официальный NASA стиль.'},
-  {label:'Planet Earth III',     tip:'BBC ультра HD природа, современная документалистика, кинематографичная дикая природа.'},
-  {label:'Nova PBS',             tip:'PBS: образовательный и точный, умеренно кинематографичный.'},
-  {label:'Яркие цвета',          tip:'Насыщенная палитра, живые оттенки, избегать тёмных тонов.'},
-  {label:'Не слишком мрачно',    tip:'Сбалансированное освещение, средний уровень контраста.'},
-  {label:'Минималистичный',      tip:'Чистая композиция, мало элементов, акцент на главном объекте.'},
-  {label:'Тёплые тона',          tip:'Золотистые, янтарные, оранжевые оттенки; тёплое закатное освещение.'},
-  {label:'Холодные тона',        tip:'Синие, стальные, ледяные тона; холодное или космическое освещение.'},
-];
-
-function initStyleChips(){
-  const wrap=document.getElementById('styleChips');
-  STYLE_CHIPS.forEach(function(ch){
-    const chip=document.createElement('button');
-    chip.className='style-chip';chip.type='button';chip.textContent=ch.label;chip.title=ch.tip;
-    chip.onclick=function(){
-      chip.classList.toggle('active');
-      const active=[...document.querySelectorAll('.style-chip.active')].map(c=>c.textContent);
-      const custom=document.getElementById('styleNotes').value.replace(/^[^·]+·?\s*/,'').trim();
-      S.styleNotes=active.length?(active.join(', ')+(custom?' · '+custom:'')):(custom||'');
-      document.getElementById('styleNotes').value=S.styleNotes;
-    };
-    wrap.appendChild(chip);
+// ─── STYLE BLOCKS ─────────────────────────────────────────────────────────
+function initStyleBlocks(){
+  const wrap=document.getElementById('styleBlocks');
+  if(!wrap)return;
+  wrap.innerHTML='';
+  STYLE_BLOCKS.forEach(function(block){
+    const div=document.createElement('div');
+    div.innerHTML='<div class="style-block-lbl">'+block.label+'</div><div class="style-block-grid" id="sbg-'+block.id+'"></div>';
+    wrap.appendChild(div);
+    const grid=document.getElementById('sbg-'+block.id);
+    block.opts.forEach(function(opt){
+      const b=document.createElement('button');
+      b.className='style-opt';
+      b.type='button';
+      b.innerHTML=opt.label+'<span class="tip">'+opt.tip+'</span>';
+      b.onclick=function(){
+        if(b.classList.contains('active')){
+          b.classList.remove('active');
+          S.styleSelections=S.styleSelections||{};
+          delete S.styleSelections[block.id];
+        } else {
+          grid.querySelectorAll('.style-opt').forEach(function(x){x.classList.remove('active');});
+          b.classList.add('active');
+          S.styleSelections=S.styleSelections||{};
+          S.styleSelections[block.id]=opt.key;
+        }
+        updateStyleCtxFromBlocks();
+      };
+      grid.appendChild(b);
+    });
   });
 }
+
+function updateStyleCtxFromBlocks(){
+  const sel=S.styleSelections||{};
+  const parts=[];
+  STYLE_BLOCKS.forEach(function(block){
+    const key=sel[block.id];
+    if(key){
+      const opt=block.opts.find(function(o){return o.key===key;});
+      if(opt)parts.push(opt.ctx);
+    }
+  });
+  S.styleBlockCtx=parts.join('. ');
+}
+
+const STYLE_BLOCKS=[
+  {
+    id:'atmo', label:'АТМОСФЕРА', single:true,
+    opts:[
+      {key:'epic',      label:'Эпичный',       ctx:'Epic, cinematic, dramatic lighting, grand scale, moody atmosphere, overwhelming sense of scale',         tip:'Грандиозные планы, давящий масштаб, тяжёлое небо. Зритель чувствует себя маленьким.'},
+      {key:'poetic',    label:'Поэтичный',      ctx:'Poetic, contemplative, slow and beautiful, lyrical, meditative, gentle wonder, soft light',              tip:'Медленный, созерцательный. Красота ради красоты. Мягкий свет, тишина.'},
+      {key:'dark',      label:'Мрачный',        ctx:'Dark, ominous, tense, deep shadows, foreboding, unsettling atmosphere, dramatic contrast',               tip:'Тёмный и тревожный. Глубокие тени, ощущение опасности или тайны.'},
+      {key:'scientific',label:'Научный',        ctx:'Cold scientific precision, clean sterile lighting, clinical, analytical, no emotional manipulation',      tip:'Холодный и точный. Никакой лишней драмы — только факт и структура.'},
+      {key:'mystic',    label:'Мистический',    ctx:'Mysterious, ethereal, otherworldly glow, dreamlike quality, surreal beauty, unknown forces at work',     tip:'Потусторонний, загадочный. Свет как будто изнутри, граница между мирами.'},
+      {key:'warm',      label:'Тёплый / Уютный',ctx:'Warm inviting tones, golden amber light, life-affirming, cozy, safe, vibrant and joyful',                tip:'Золотой свет, тепло, радость. Подходит для детского контента и природы.'},
+    ]
+  },
+  {
+    id:'light', label:'СВЕТ И ЦВЕТ', single:true,
+    opts:[
+      {key:'golden',    label:'Золотой час',    ctx:'Golden hour lighting, warm amber sun low on horizon, long shadows, glowing edges, magical quality',      tip:'Закатный или рассветный свет. Всё золотится, тени длинные и красивые.'},
+      {key:'cold',      label:'Холодный / Космос',ctx:'Cold blue-steel lighting, icy tones, deep space color palette, clinical and vast, no warmth',          tip:'Синий, стальной, ледяной. Космос, глубокий океан, зима.'},
+      {key:'contrast',  label:'Контрастный',    ctx:'High contrast dramatic lighting, deep blacks, bright highlights, chiaroscuro, film noir influenced',     tip:'Резкий свет против глубокой тьмы. Кинематографичный контраст.'},
+      {key:'neutral',   label:'Нейтральный',    ctx:'Balanced neutral lighting, soft diffused light, no strong color cast, clean and even exposure',          tip:'Ровный рассеянный свет. Не отвлекает — акцент на содержании.'},
+      {key:'neon',      label:'Неон / Свечение', ctx:'Bioluminescent or neon glow, vivid saturated colors, glowing particles, otherworldly illumination',     tip:'Яркое свечение, насыщенные цвета. Биолюминесценция, энергия, футуризм.'},
+    ]
+  },
+  {
+    id:'camera', label:'КАМЕРА', single:true,
+    opts:[
+      {key:'epic_wide', label:'Эпик-вайд',      ctx:'Extreme wide shot, vast landscape, subject tiny against environment, IMAX scale, sweeping vista',       tip:'Огромные пространства, субъект маленький. Масштаб подавляет.'},
+      {key:'intimate',  label:'Интимный',        ctx:'Close-up, intimate framing, personal scale, subject fills frame, emotional proximity, shallow depth',   tip:'Близко к объекту. Детали, эмоции, текстуры.'},
+      {key:'drone',     label:'Дрон / Сверху',   ctx:'Aerial drone perspective, overhead or bird\'s eye view, sweeping movement across vast terrain',         tip:'Вид с воздуха. Пейзажи, масштаб территории, движение сверху.'},
+      {key:'handheld',  label:'Репортажный',     ctx:'Handheld camera, slight natural movement, documentary verite style, naturalistic, immersive',           tip:'Ручная камера, живое движение. Ощущение присутствия, документальность.'},
+      {key:'static',    label:'Статичный',       ctx:'Locked-off tripod shot, perfectly still camera, meditative, deliberate composition, no camera movement',tip:'Камера не движется. Созерцательно, намеренно, как живопись.'},
+    ]
+  },
+  {
+    id:'realism', label:'СТИЛЬ РЕНДЕРА', single:true,
+    opts:[
+      {key:'photorealism',label:'Фотореализм',  ctx:'Photorealistic, indistinguishable from real footage, NASA/BBC level accuracy, physically accurate lighting',tip:'Неотличимо от реальной съёмки. NASA, BBC уровень точности.'},
+      {key:'cinematic',   label:'Кинематограф', ctx:'Cinematic rendering, 35mm film aesthetic, subtle grain, anamorphic flare, movie-grade color grading',    tip:'Как снято на кино-камеру. Зерно плёнки, анаморфные блики.'},
+      {key:'painterly',   label:'Художественный',ctx:'Painterly artistic style, expressive brushwork, impressionistic, fine art quality, museum-worthy',      tip:'Как живопись. Импрессионизм, выразительные мазки, арт-качество.'},
+      {key:'stylized',    label:'Стилизованный', ctx:'Stylized non-photorealistic rendering, exaggerated beautiful forms, graphic and bold, illustration-like',tip:'Нереалистичный, но красивый. Графичный, иллюстративный стиль.'},
+    ]
+  },
+  {
+    id:'pace', label:'ТЕМП', single:true,
+    opts:[
+      {key:'slow',      label:'Медленный',       ctx:'Slow meditative pace, long holds, time to breathe, contemplative rhythm, unhurried beauty',             tip:'Долгие планы, время на осмысление. Медитативно и созерцательно.'},
+      {key:'dynamic',   label:'Динамичный',      ctx:'Dynamic energetic pace, motion and action, quick cuts implied, sense of movement and urgency',           tip:'Энергия, движение, ощущение действия. Быстрый монтаж.'},
+      {key:'timelapse', label:'Тайм-лапс',       ctx:'Time-lapse aesthetic, compressed time, star trails, flowing clouds, blooming flowers, light streaks',   tip:'Сжатое время. Звёздные треки, облака, цветение — всё в ускорении.'},
+    ]
+  },
+];
+
 
 // ─── TONE ─────────────────────────────────────────────────────────────────
 const toneSlider=document.getElementById('toneSlider');
@@ -1494,7 +1579,7 @@ function exportTxt(){
 
 // ─── INIT ─────────────────────────────────────────────────────────────────
 initTypes();
-initStyleChips();
+initStyleBlocks();
 loadSavedKeys();
 loadSession();
 </script>
