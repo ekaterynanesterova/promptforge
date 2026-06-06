@@ -1093,7 +1093,14 @@ function updateGenBtn(){
   const btn=document.getElementById('generateBtn');
   const n=S.selectedIds.size;
   if(wrap)wrap.style.display=n>0?'block':'none';
-  if(btn)btn.textContent='ГЕНЕРИРОВАТЬ ПРОМТЫ ДЛЯ ВЫБРАННЫХ ('+n+')';
+  if(btn){
+    const done=Array.from(S.selectedIds).filter(function(id){return S.prompts[id];}).length;
+    if(done>0&&done<n){
+      btn.textContent='ГЕНЕРИРОВАТЬ ПРОМТЫ ДЛЯ ВЫБРАННЫХ · готово '+done+' из '+n;
+    } else {
+      btn.textContent='ГЕНЕРИРОВАТЬ ПРОМТЫ ДЛЯ ВЫБРАННЫХ ('+n+')';
+    }
+  }
 }
 
 function toggleAutoAngles(){
@@ -1148,6 +1155,7 @@ async function generatePrompts(isResume){
       data.results.forEach(function(r){S.prompts[r.id]=Object.assign({},r,{angles:[]});});
       renderPrompts(batch);
       failedAt=null;
+      updateGenBtn();
 
       if(i+BATCH<selected.length){
         const batchPause=randPause(8,15);
