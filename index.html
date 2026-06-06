@@ -108,6 +108,10 @@ canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:n
 .btn-sm{background:rgba(60,120,255,0.08);border:1px solid rgba(60,120,255,0.22);color:rgba(140,190,255,0.75);font-size:8px;letter-spacing:1px;padding:4px 10px;border-radius:2px;white-space:nowrap;cursor:pointer;transition:all 0.15s}
 .btn-sm.active{background:rgba(74,158,255,0.2);border-color:rgba(74,158,255,0.6);color:#b8dcff}
 .btn-sm.done{color:rgba(60,200,100,0.8);border-color:rgba(60,200,100,0.2)}
+.btn-sm.copied{color:rgba(60,200,100,0.75);border-color:rgba(60,200,100,0.25);background:rgba(60,200,100,0.06)}
+.btn-sm.copied:hover{color:rgba(60,200,100,1);border-color:rgba(60,200,100,0.5);background:rgba(60,200,100,0.1)}
+@keyframes flashCopy{0%{opacity:1}40%{opacity:0.3}100%{opacity:1}}
+.btn-sm.flash{animation:flashCopy 0.35s ease-out}
 .btn-sm.expand{background:rgba(74,158,255,0.08);border-color:rgba(74,158,255,0.2);color:rgba(100,170,255,0.7)}
 .btn-sm.spinning span{display:inline-block;animation:spin 1s linear infinite}
 
@@ -359,7 +363,8 @@ const S={
   styleSelections:{},
   styleBlockCtx:'',
   resumeFrom:null,
-  resumeSelected:null
+  resumeSelected:null,
+  copiedIds:new Set()
 };
 
 const TYPES={
@@ -1181,7 +1186,7 @@ function renderPrompts(scenes){
         '<div class="pc-btns">'+
           (isAI?'<button class="btn-sm expand" id="expbtn-'+sc.id+'" onclick="expandAngles('+sc.id+')">+ 4 ракурса</button>':'')+
           (isAI?'<div class="regen-wrap" id="rw-'+sc.id+'"><button class="btn-regen" onclick="toggleRegenMenu('+sc.id+',event)">↺ стиль ▾</button><div class="regen-menu" id="rm-'+sc.id+'" style="display:none">'+buildRegenMenu(sc.id)+'</div></div>':'')+
-          '<button class="btn-sm" id="cpbtn-'+sc.id+'" onclick="copyPrompt('+sc.id+')">Копировать</button>'+
+          '<button class="btn-sm'+(S.copiedIds.has('p-'+sc.id)?' copied':'')+'" id="cpbtn-'+sc.id+'" onclick="copyPrompt('+sc.id+')">'+(S.copiedIds.has('p-'+sc.id)?'✓ Скопировано':'Копировать')+'</button>'+
         '</div>'+
       '</div>'+
       '<div class="pc-body">'+
@@ -1271,6 +1276,9 @@ async function regenPrompt(id,styleKey,customCtx){
     pushHistory(id);
     p.prompt=data.prompt;
     if(ptEl){ptEl.textContent=p.prompt;ptEl.style.opacity='1';}
+    S.copiedIds.delete('p-'+id);
+    const cpBtn=document.getElementById('cpbtn-'+id);
+    if(cpBtn){cpBtn.textContent='Копировать';cpBtn.classList.remove('copied');}
     p.angles=[];
     const angWrap=document.getElementById('ang-'+id);
     if(angWrap){angWrap.style.display='none';angWrap.innerHTML='';}
@@ -1339,11 +1347,22 @@ function copyAngle(btnId,idx,id){
 function copyText(btnId,text){
   const go=function(){const el=document.createElement('textarea');el.value=text;el.style.cssText='position:fixed;opacity:0';document.body.appendChild(el);el.focus();el.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(el);};
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text).catch(go);else go();
-  if(btnId){const b=document.getElementById(btnId);if(b){const o=b.textContent;b.textContent='✓';b.classList.add('done');setTimeout(function(){b.textContent=o;b.classList.remove('done');},1600);}}
+  if(btnId){
+    const b=document.getElementById(btnId);
+    if(b){
+      const alreadyCopied=b.classList.contains('copied');
+      b.classList.remove('flash');
+      void b.offsetWidth; // force reflow для перезапуска анимации
+      b.textContent='✓ Скопировано';
+      b.classList.add('copied');
+      b.classList.add('flash');
+    }
+  }
 }
 
 function copyPrompt(id){
   const p=S.prompts[id];if(!p)return;
+  S.copiedIds.add('p-'+id);
   copyText('cpbtn-'+id,p.prompt||p.ae_brief||'');
 }
 
