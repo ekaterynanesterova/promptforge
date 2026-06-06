@@ -8,12 +8,12 @@
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{min-height:100vh;background:linear-gradient(160deg,#010610 0%,#030d1e 55%,#020a18 100%);font-family:'Courier New',monospace;color:#8ab0d0;overflow-x:hidden}
+body{min-height:100vh;background:linear-gradient(160deg,#010610 0%,#030d1e 55%,#020a18 100%);font-family:'Courier New',monospace;color:#b8d4ee;overflow-x:hidden}
 ::-webkit-scrollbar{width:4px;background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(70,130,255,0.2);border-radius:2px}
 button{cursor:pointer;font-family:'Courier New',monospace;transition:all 0.2s}
 button:hover{opacity:0.8}
-textarea,input,select{font-family:'Courier New',monospace;background:rgba(3,8,22,0.8);border:1px solid rgba(60,120,255,0.12);border-radius:2px;color:#8ab0d0;outline:none}
+textarea,input,select{font-family:'Courier New',monospace;background:rgba(3,8,22,0.8);border:1px solid rgba(60,120,255,0.18);border-radius:2px;color:#b8d4ee;outline:none}
 textarea:focus,input:focus{border-color:rgba(70,130,255,0.35)}
 @keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -24,74 +24,74 @@ canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:n
 #app{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:0 16px 80px}
 
 .header{text-align:center;padding:32px 0 22px}
-.title{font-size:28px;font-weight:700;letter-spacing:8px;color:#b8ccec;text-shadow:0 0 22px rgba(80,140,255,0.22)}
-.title span{color:#4a9eff;text-shadow:0 0 16px rgba(74,158,255,0.5)}
-.subtitle{color:rgba(130,160,200,0.3);font-size:9px;letter-spacing:3px;margin-top:6px;text-transform:uppercase}
+.title{font-size:28px;font-weight:700;letter-spacing:8px;color:#d4e4f8;text-shadow:0 0 22px rgba(80,140,255,0.3)}
+.title span{color:#4a9eff;text-shadow:0 0 16px rgba(74,158,255,0.6)}
+.subtitle{color:rgba(160,190,230,0.5);font-size:9px;letter-spacing:3px;margin-top:6px;text-transform:uppercase}
 
 .section{margin-bottom:18px;animation:fadeUp 0.3s ease}
 .sec-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .step-num{width:22px;height:22px;border-radius:50%;border:1px solid rgba(74,158,255,0.35);display:flex;align-items:center;justify-content:center;font-size:9px;color:#4a9eff;flex-shrink:0;letter-spacing:0}
-.sec-title{font-size:9px;letter-spacing:3px;color:rgba(90,150,255,0.55);text-transform:uppercase}
+.sec-title{font-size:9px;letter-spacing:3px;color:rgba(140,190,255,0.85);text-transform:uppercase}
 .card{background:rgba(60,120,255,0.03);border:1px solid rgba(60,120,255,0.1);border-radius:3px;padding:14px 16px}
 
 .api-bar{display:flex;justify-content:space-between;align-items:center;background:rgba(60,120,255,0.04);border:1px solid rgba(60,120,255,0.1);border-radius:2px;padding:10px 16px;margin-bottom:20px;gap:10px;flex-wrap:wrap}
 .api-left{display:flex;align-items:center;gap:8px}
 .api-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,100,80,0.6);transition:background 0.3s;flex-shrink:0}
 .api-dot.on{background:#4aff90}
-.api-status{font-size:10px;color:rgba(140,180,220,0.55);letter-spacing:1px}
+.api-status{font-size:10px;color:rgba(170,205,240,0.85);letter-spacing:1px}
 .api-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .api-input{width:220px;font-size:11px;padding:6px 10px}
 .api-toggle{background:transparent;border:none;font-size:13px;padding:0 2px}
 .api-save{background:rgba(74,158,255,0.12);border:1px solid rgba(74,158,255,0.25);color:#4a9eff;font-size:9px;letter-spacing:2px;padding:6px 14px;border-radius:2px}
-.api-masked{font-size:10px;color:rgba(140,180,220,0.4);letter-spacing:2px}
-.api-change{background:transparent;border:1px solid rgba(60,120,255,0.15);color:rgba(90,150,255,0.4);font-size:9px;letter-spacing:1px;padding:5px 10px;border-radius:2px}
+.api-masked{font-size:10px;color:rgba(160,200,240,0.7);letter-spacing:2px}
+.api-change{background:transparent;border:1px solid rgba(60,120,255,0.25);color:rgba(130,180,255,0.7);font-size:9px;letter-spacing:1px;padding:5px 10px;border-radius:2px}
 
 .type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
-.type-btn{background:rgba(5,12,30,0.8);border:1px solid rgba(60,120,255,0.1);border-radius:3px;padding:12px 8px;text-align:center;color:rgba(130,170,220,0.45);font-size:10px;letter-spacing:1px;line-height:1.6;display:flex;flex-direction:column;align-items:center;gap:4px}
-.type-btn.active{border-color:rgba(74,158,255,0.45);background:rgba(74,158,255,0.07);color:#a0c8f0}
+.type-btn{background:rgba(5,12,30,0.8);border:1px solid rgba(60,120,255,0.18);border-radius:3px;padding:12px 8px;text-align:center;color:rgba(160,200,240,0.65);font-size:10px;letter-spacing:1px;line-height:1.6;display:flex;flex-direction:column;align-items:center;gap:4px}
+.type-btn.active{border-color:rgba(74,158,255,0.6);background:rgba(74,158,255,0.1);color:#c0dcf8}
 .type-icon{font-size:22px;line-height:1}
 
 .tone-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
-.tone-lbl{font-size:9px;letter-spacing:1px;color:rgba(90,150,255,0.4);white-space:nowrap}
+.tone-lbl{font-size:9px;letter-spacing:1px;color:rgba(140,185,255,0.7);white-space:nowrap}
 .tone-slider{flex:1;min-width:80px;-webkit-appearance:none;height:2px;background:linear-gradient(90deg,rgba(74,158,255,0.7),rgba(80,200,140,0.5));border-radius:1px;outline:none;cursor:pointer}
 .tone-slider::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:#4a9eff;cursor:pointer;box-shadow:0 0 8px rgba(74,158,255,0.5)}
 .tone-val{font-size:9px;color:#4a9eff;letter-spacing:1px;min-width:110px;text-align:right}
 
 .style-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
-.style-chip{background:rgba(5,12,30,0.8);border:1px solid rgba(60,120,255,0.12);border-radius:12px;color:rgba(120,160,220,0.5);font-size:9px;letter-spacing:1px;padding:4px 11px;cursor:pointer;transition:all 0.2s;font-family:'Courier New',monospace}
-.style-chip:hover{border-color:rgba(74,158,255,0.35);color:rgba(140,180,255,0.8);background:rgba(74,158,255,0.07)}
+.style-chip{background:rgba(5,12,30,0.8);border:1px solid rgba(60,120,255,0.2);border-radius:12px;color:rgba(150,190,240,0.7);font-size:9px;letter-spacing:1px;padding:4px 11px;cursor:pointer;transition:all 0.2s;font-family:'Courier New',monospace}
+.style-chip:hover{border-color:rgba(74,158,255,0.5);color:rgba(180,215,255,0.95);background:rgba(74,158,255,0.09)}
 .style-chip.active{border-color:rgba(74,158,255,0.5);color:#4a9eff;background:rgba(74,158,255,0.1)}
 .style-input{width:100%;font-size:11px;padding:8px 12px}
 .type-custom{width:100%;font-size:11px;padding:8px 12px;margin-bottom:14px}
 
 /* Script slots */
 .slot-label{display:flex;align-items:center;gap:8px;margin-bottom:7px;margin-top:4px}
-.slot-lbl-txt{font-size:9px;letter-spacing:2px;color:rgba(90,150,255,0.45);text-transform:uppercase}
-.slot-tag{font-size:8px;letter-spacing:1px;padding:2px 7px;border-radius:8px;background:rgba(74,158,255,0.08);border:1px solid rgba(74,158,255,0.15);color:rgba(74,158,255,0.45)}
-.slot-tag.opt{background:rgba(60,120,255,0.04);border-color:rgba(60,120,255,0.1);color:rgba(90,150,255,0.3)}
+.slot-lbl-txt{font-size:9px;letter-spacing:2px;color:rgba(150,200,255,0.8);text-transform:uppercase}
+.slot-tag{font-size:8px;letter-spacing:1px;padding:2px 7px;border-radius:8px;background:rgba(74,158,255,0.1);border:1px solid rgba(74,158,255,0.25);color:rgba(100,170,255,0.8)}
+.slot-tag.opt{background:rgba(60,120,255,0.06);border-color:rgba(60,120,255,0.18);color:rgba(130,175,255,0.55)}
 
 .drop-zone{border:1px dashed rgba(60,120,255,0.2);border-radius:3px;padding:20px 26px;display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;background:rgba(60,120,255,0.02);transition:all 0.2s;margin-bottom:10px}
 .drop-zone:hover,.drop-zone.drag{border-color:rgba(74,158,255,0.4);background:rgba(74,158,255,0.04)}
 .drop-icon{font-size:24px;opacity:0.4}
-.drop-text{font-size:11px;color:rgba(90,150,255,0.5);letter-spacing:1px}
-.drop-sub{font-size:9px;color:rgba(90,150,255,0.3);letter-spacing:1px}
+.drop-text{font-size:11px;color:rgba(150,195,255,0.8);letter-spacing:1px}
+.drop-sub{font-size:9px;color:rgba(130,175,255,0.55);letter-spacing:1px}
 .or-div{display:flex;align-items:center;gap:12px;margin-bottom:10px}
 .or-div::before,.or-div::after{content:'';flex:1;height:1px;background:rgba(60,120,255,0.1)}
-.or-div span{font-size:9px;color:rgba(90,150,255,0.3);letter-spacing:2px}
+.or-div span{font-size:9px;color:rgba(130,175,255,0.55);letter-spacing:2px}
 .word-row{display:flex;justify-content:space-between;margin-top:7px;margin-bottom:8px}
-.dim{font-size:9px;color:rgba(90,150,255,0.3);letter-spacing:1px}
+.dim{font-size:9px;color:rgba(140,185,255,0.6);letter-spacing:1px}
 .script-divider{height:1px;background:rgba(60,120,255,0.08);margin:16px 0}
 
 .duration-row{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(60,120,255,0.08)}
-.dur-lbl{font-size:9px;letter-spacing:2px;color:rgba(90,150,255,0.45);white-space:nowrap}
+.dur-lbl{font-size:9px;letter-spacing:2px;color:rgba(150,200,255,0.8);white-space:nowrap}
 .dur-input{width:74px;font-size:13px;padding:6px 10px;text-align:center;letter-spacing:2px;color:#8ab0d0}
-.dur-hint{font-size:9px;color:rgba(90,150,255,0.28);letter-spacing:1px}
-.dur-words{font-size:9px;color:rgba(74,158,255,0.5);letter-spacing:1px;margin-left:auto}
+.dur-hint{font-size:9px;color:rgba(130,175,255,0.55);letter-spacing:1px}
+.dur-words{font-size:9px;color:rgba(100,175,255,0.8);letter-spacing:1px;margin-left:auto}
 
-.btn-primary{width:100%;background:linear-gradient(135deg,#142e66,#0a1a3e);border:1px solid rgba(70,130,255,0.3);color:#5090e0;font-size:11px;letter-spacing:4px;padding:14px;border-radius:2px}
+.btn-primary{width:100%;background:linear-gradient(135deg,#142e66,#0a1a3e);border:1px solid rgba(70,130,255,0.4);color:#80b8f0;font-size:11px;letter-spacing:4px;padding:14px;border-radius:2px}
 .btn-primary:disabled{opacity:0.35;cursor:not-allowed}
-.btn-ghost{background:transparent;border:1px solid rgba(60,120,255,0.18);color:rgba(90,150,255,0.5);font-size:9px;letter-spacing:2px;padding:6px 14px;border-radius:2px}
-.btn-sm{background:rgba(60,120,255,0.06);border:1px solid rgba(60,120,255,0.14);color:rgba(90,150,255,0.5);font-size:8px;letter-spacing:1px;padding:4px 10px;border-radius:2px;white-space:nowrap}
+.btn-ghost{background:transparent;border:1px solid rgba(60,120,255,0.28);color:rgba(140,190,255,0.75);font-size:9px;letter-spacing:2px;padding:6px 14px;border-radius:2px}
+.btn-sm{background:rgba(60,120,255,0.08);border:1px solid rgba(60,120,255,0.22);color:rgba(140,190,255,0.75);font-size:8px;letter-spacing:1px;padding:4px 10px;border-radius:2px;white-space:nowrap}
 .btn-sm.done{color:rgba(60,200,100,0.8);border-color:rgba(60,200,100,0.2)}
 .btn-sm.expand{background:rgba(74,158,255,0.08);border-color:rgba(74,158,255,0.2);color:rgba(100,170,255,0.7)}
 .btn-sm.spinning span{display:inline-block;animation:spin 1s linear infinite}
@@ -99,19 +99,19 @@ canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:n
 .load-wrap{text-align:center;padding:14px 0}
 .load-bar{height:1px;background:rgba(60,120,255,0.07);overflow:hidden;margin-bottom:8px;border-radius:1px}
 .load-fill{height:100%;width:50%;background:linear-gradient(90deg,transparent,#4a9eff,transparent);animation:slide 1.6s ease-in-out infinite}
-.load-txt{color:rgba(90,150,255,0.4);font-size:9px;letter-spacing:3px}
+.load-txt{color:rgba(140,190,255,0.75);font-size:9px;letter-spacing:3px}
 .error-box{background:rgba(255,40,40,0.06);border:1px solid rgba(255,40,40,0.15);color:rgba(255,100,100,0.7);padding:10px 14px;border-radius:2px;font-size:11px;margin-bottom:12px;line-height:1.6}
 
 .stats-bar{display:flex;gap:20px;margin-bottom:14px;flex-wrap:wrap}
 .stat{display:flex;flex-direction:column;gap:2px}
-.stat-k{font-size:8px;letter-spacing:2px;color:rgba(90,150,255,0.35)}
-.stat-v{font-size:12px;color:rgba(140,180,230,0.7);letter-spacing:1px}
+.stat-k{font-size:8px;letter-spacing:2px;color:rgba(150,195,255,0.65)}
+.stat-v{font-size:12px;color:rgba(190,220,255,0.9);letter-spacing:1px}
 .stat-v.ai{color:rgba(74,158,255,0.9)}
 .stat-v.ae{color:rgba(255,160,80,0.9)}
 .stat-v.hy{color:rgba(160,100,255,0.9)}
 
 .quick-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
-.quick-lbl{font-size:9px;color:rgba(90,150,255,0.4);letter-spacing:1px;margin-right:2px}
+.quick-lbl{font-size:9px;color:rgba(150,195,255,0.7);letter-spacing:1px;margin-right:2px}
 
 .scene-list{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;max-height:520px;overflow-y:auto;padding-right:4px}
 .scene-card{border-radius:2px;padding:11px 13px;display:flex;align-items:flex-start;gap:11px;cursor:pointer;transition:all 0.15s}
@@ -125,14 +125,14 @@ canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:n
 .sc-body{flex:1;min-width:0}
 .sc-meta{display:flex;gap:7px;align-items:center;margin-bottom:4px;flex-wrap:wrap}
 .badge{font-size:7px;letter-spacing:2px;padding:2px 7px;border-radius:8px;font-weight:bold;text-transform:uppercase}
-.badge.ai{background:rgba(74,158,255,0.15);color:rgba(74,158,255,0.95)}
-.badge.ae{background:rgba(255,160,80,0.15);color:rgba(255,160,80,0.95)}
-.badge.hybrid{background:rgba(160,100,255,0.15);color:rgba(160,100,255,0.95)}
-.sc-num{font-size:9px;color:rgba(90,150,255,0.4);letter-spacing:1px}
-.sc-dur{font-size:9px;color:rgba(90,150,255,0.28)}
-.sc-time{font-size:9px;color:rgba(74,158,255,0.45);letter-spacing:1px;font-weight:bold}
-.sc-exc{font-size:11px;color:#8ab0d0;line-height:1.6;margin-bottom:3px;font-family:'Georgia',serif}
-.sc-reason{font-size:9px;color:rgba(90,150,255,0.33);line-height:1.4}
+.badge.ai{background:rgba(74,158,255,0.2);color:rgba(120,190,255,1)}
+.badge.ae{background:rgba(255,160,80,0.2);color:rgba(255,185,110,1)}
+.badge.hybrid{background:rgba(160,100,255,0.2);color:rgba(195,145,255,1)}
+.sc-num{font-size:9px;color:rgba(140,185,255,0.7);letter-spacing:1px}
+.sc-dur{font-size:9px;color:rgba(130,175,255,0.5)}
+.sc-time{font-size:9px;color:rgba(100,175,255,0.85);letter-spacing:1px;font-weight:bold}
+.sc-exc{font-size:11px;color:#cce0f5;line-height:1.6;margin-bottom:3px;font-family:'Georgia',serif}
+.sc-reason{font-size:9px;color:rgba(140,185,255,0.6);line-height:1.4}
 
 .prompt-card{border-radius:3px;overflow:hidden;margin-bottom:10px}
 .prompt-card.ai{border:1px solid rgba(74,158,255,0.15)}
@@ -141,29 +141,55 @@ canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:n
 .pc-head{display:flex;align-items:center;gap:10px;padding:11px 14px;background:rgba(0,0,0,0.18)}
 .pc-info{flex:1;min-width:0}
 .pc-btns{display:flex;gap:6px;flex-shrink:0;align-items:center;flex-wrap:wrap;justify-content:flex-end}
-.pc-exc{font-size:10px;color:rgba(90,150,255,0.38);margin-top:2px;font-family:'Georgia',serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-exc{font-size:10px;color:rgba(150,195,255,0.65);margin-top:2px;font-family:'Georgia',serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pc-body{padding:13px 14px;border-top:1px solid rgba(60,120,255,0.06)}
-.pc-prompt{font-size:12px;color:#9ac0e0;line-height:1.9;font-family:'Georgia',serif;transition:opacity 0.2s}
-.pc-ae{font-size:11px;color:rgba(255,185,110,0.75);line-height:1.8}
+.pc-prompt{font-size:12px;color:#cce2f8;line-height:1.9;font-family:'Georgia',serif;transition:opacity 0.2s}
+.pc-ae{font-size:11px;color:rgba(255,200,130,0.9);line-height:1.8}
 .angles-wrap{border-top:1px solid rgba(60,120,255,0.06);padding:10px 14px;display:flex;flex-direction:column;gap:8px}
 .angle-item{padding:10px 12px;background:rgba(0,0,0,0.15);border-radius:2px;border-left:2px solid rgba(74,158,255,0.18)}
 .angle-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
-.angle-lbl{font-size:8px;letter-spacing:2px;color:rgba(74,158,255,0.5);text-transform:uppercase}
-.angle-txt{font-size:11px;color:#8ab0d0;line-height:1.8;font-family:'Georgia',serif}
+.angle-lbl{font-size:8px;letter-spacing:2px;color:rgba(120,185,255,0.85);text-transform:uppercase}
+.angle-txt{font-size:11px;color:#c0d8f0;line-height:1.8;font-family:'Georgia',serif}
 
 /* Regen dropdown */
 .regen-wrap{position:relative;display:inline-block}
-.btn-regen{background:rgba(60,120,255,0.06);border:1px solid rgba(74,158,255,0.18);color:rgba(100,170,255,0.6);font-size:8px;letter-spacing:1px;padding:4px 10px;border-radius:2px;white-space:nowrap}
-.btn-regen:hover{border-color:rgba(74,158,255,0.35);color:rgba(120,190,255,0.8)}
+.btn-regen{background:rgba(60,120,255,0.08);border:1px solid rgba(74,158,255,0.28);color:rgba(140,195,255,0.85);font-size:8px;letter-spacing:1px;padding:4px 10px;border-radius:2px;white-space:nowrap}
+.btn-regen:hover{border-color:rgba(74,158,255,0.5);color:rgba(170,215,255,1)}
 .regen-menu{position:fixed;width:240px;background:#060f24;border:1px solid rgba(60,120,255,0.2);border-radius:3px;z-index:1000;box-shadow:0 8px 32px rgba(0,0,0,0.8);overflow-y:auto;max-height:70vh;animation:fadeUp 0.15s ease}
-.regen-sect{font-size:8px;letter-spacing:2px;color:rgba(74,158,255,0.35);padding:8px 12px 4px;background:rgba(0,0,0,0.2);text-transform:uppercase}
-.regen-opt{display:block;width:100%;text-align:left;background:transparent;border:none;color:rgba(120,170,230,0.65);font-size:10px;letter-spacing:0.5px;padding:7px 14px;cursor:pointer;transition:background 0.1s}
-.regen-opt:hover{background:rgba(74,158,255,0.08);color:#a0c8f0}
+.regen-sect{font-size:8px;letter-spacing:2px;color:rgba(120,180,255,0.6);padding:8px 12px 4px;background:rgba(0,0,0,0.2);text-transform:uppercase}
+.regen-opt{display:block;width:100%;text-align:left;background:transparent;border:none;color:rgba(165,205,250,0.85);font-size:10px;letter-spacing:0.5px;padding:7px 14px;cursor:pointer;transition:background 0.1s}
+.regen-opt:hover{background:rgba(74,158,255,0.1);color:#c8e4ff}
 .regen-custom-row{display:flex;gap:6px;padding:8px 10px;border-top:1px solid rgba(60,120,255,0.1);background:rgba(0,0,0,0.15)}
 .regen-custom-input{flex:1;font-size:10px;padding:5px 8px;border-radius:2px}
 .regen-custom-btn{background:rgba(74,158,255,0.1);border:1px solid rgba(74,158,255,0.2);color:rgba(74,158,255,0.7);font-size:10px;padding:5px 9px;border-radius:2px}
 
+/* Prompt history (undo regen) */
+.history-bar{display:flex;gap:5px;margin-top:6px;align-items:center;flex-wrap:wrap}
+.history-lbl{font-size:8px;color:rgba(140,185,255,0.6);letter-spacing:1px}
+.btn-hist{background:rgba(60,120,255,0.07);border:1px solid rgba(60,120,255,0.2);color:rgba(140,185,255,0.7);font-size:8px;letter-spacing:0.5px;padding:3px 8px;border-radius:2px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn-hist:hover{border-color:rgba(74,158,255,0.4);color:rgba(160,210,255,0.9)}
+.btn-hist.current{border-color:rgba(74,158,255,0.5);color:rgba(170,215,255,1);background:rgba(74,158,255,0.1)}
+
+/* Prompt warning */
+.prompt-warn{font-size:8px;color:rgba(255,180,60,0.7);letter-spacing:1px;margin-top:5px;padding:3px 8px;background:rgba(255,160,30,0.06);border-left:2px solid rgba(255,160,30,0.3);border-radius:1px}
+
 .export-bar{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+
+/* Auto-angles toggle */
+.auto-angles-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer;user-select:none}
+.toggle-track{width:32px;height:18px;border-radius:9px;background:rgba(60,120,255,0.12);border:1px solid rgba(60,120,255,0.2);position:relative;flex-shrink:0;transition:background 0.2s,border-color 0.2s;cursor:pointer}
+.toggle-track.on{background:rgba(74,158,255,0.25);border-color:rgba(74,158,255,0.5)}
+.toggle-thumb{position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:rgba(90,150,255,0.4);transition:transform 0.2s,background 0.2s}
+.toggle-track.on .toggle-thumb{transform:translateX(14px);background:#4a9eff}
+.auto-angles-lbl{font-size:9px;letter-spacing:2px;color:rgba(140,185,255,0.7);text-transform:uppercase;transition:color 0.2s}
+.auto-angles-row:has(.toggle-track.on) .auto-angles-lbl{color:rgba(160,215,255,0.95)}
+
+/* Session restore notice */
+.restore-bar{background:rgba(74,158,255,0.07);border:1px solid rgba(74,158,255,0.18);border-radius:2px;padding:8px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.restore-txt{font-size:10px;color:rgba(100,170,255,0.7);letter-spacing:1px}
+.restore-btns{display:flex;gap:6px}
+.btn-restore{background:rgba(74,158,255,0.12);border:1px solid rgba(74,158,255,0.25);color:#4a9eff;font-size:9px;letter-spacing:1px;padding:5px 12px;border-radius:2px}
+.btn-discard{background:transparent;border:1px solid rgba(60,120,255,0.15);color:rgba(90,150,255,0.4);font-size:9px;letter-spacing:1px;padding:5px 10px;border-radius:2px}
 
 @media(max-width:600px){
   .type-grid{grid-template-columns:1fr 1fr}
@@ -182,6 +208,7 @@ canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:n
   <h1 class="title">PROMPT<span>FORGE</span></h1>
   <p class="subtitle">Анализ сценария · AI / After Effects · Кинематографические промты</p>
 </div>
+<div id="restoreBar" style="display:none"></div>
 
 <div class="api-bar">
   <div class="api-left">
@@ -280,12 +307,22 @@ canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:n
     <div class="load-bar"><div class="load-fill"></div></div>
     <p class="load-txt" id="generateTxt">Генерирую промты...</p>
   </div>
-  <button class="btn-primary" id="generateBtn" onclick="generatePrompts()" style="display:none">ГЕНЕРИРОВАТЬ ПРОМТЫ ДЛЯ ВЫБРАННЫХ</button>
+  <div id="generateBtnWrap" style="display:none">
+    <label class="auto-angles-row" id="autoAnglesLabel">
+      <span class="toggle-track" id="autoAnglesTrack" onclick="toggleAutoAngles()"><span class="toggle-thumb" id="autoAnglesThumb"></span></span>
+      <span class="auto-angles-lbl">Сразу генерировать ракурсы</span>
+    </label>
+    <button class="btn-primary" id="generateBtn" onclick="generatePrompts()">ГЕНЕРИРОВАТЬ ПРОМТЫ ДЛЯ ВЫБРАННЫХ</button>
+  </div>
 </div>
 
 <!-- STEP 4 -->
 <div class="section" id="promptSection" style="display:none">
-  <div class="sec-head"><div class="step-num">4</div><span class="sec-title">Промты</span></div>
+  <div class="sec-head">
+    <div class="step-num">4</div>
+    <span class="sec-title">Промты</span>
+    <button class="btn-ghost" id="genAllAnglesBtn" onclick="generateAllAngles()" style="margin-left:auto;display:none">+ Все ракурсы</button>
+  </div>
   <div id="promptList"></div>
   <div class="export-bar" id="exportBar"></div>
 </div>
@@ -299,7 +336,10 @@ const S={
   tone:35,styleNotes:'',
   voiceoverText:'',videoDurationSec:0,
   shotList:null,selectedIds:new Set(),
-  prompts:{}
+  prompts:{},
+  promptHistory:{},   // id -> [{prompt,ae_brief,angles,label}] last 3
+  selHistory:[],      // stack of Set snapshots for undo
+  autoAngles:false
 };
 
 const TYPES={
@@ -778,7 +818,7 @@ async function analyzeScript(){
     let idCounter=1;
 
     for(let i=0;i<chunks.length;i++){
-      const pause=randPause(5,10);
+      const pause=randPause(10,18);
       document.getElementById('analyzeTxt').textContent=
         'Анализирую часть '+(i+1)+' из '+totalChunks+'...';
 
@@ -809,6 +849,8 @@ async function analyzeScript(){
     document.getElementById('promptSection').style.display='none';
     document.getElementById('promptList').innerHTML='';
     document.getElementById('exportBar').innerHTML='';
+    S.prompts={};S.promptHistory={};
+    saveSession();
     setTimeout(function(){document.getElementById('shotSection').scrollIntoView({behavior:'smooth',block:'start'});},100);
 
   }catch(e){
@@ -844,10 +886,10 @@ function renderShotList(){
     qr.appendChild(b);
   }
   const bAll=document.createElement('button');bAll.className='btn-sm';bAll.textContent='Все AI+Гибрид';
-  bAll.onclick=function(){S.selectedIds=new Set(scenes.filter(function(s){return s.type!=='ae';}).map(function(s){return s.id;}));updateCards();updateGenBtn();};
+  bAll.onclick=function(){pushSelHistory();S.selectedIds=new Set(scenes.filter(function(s){return s.type!=='ae';}).map(function(s){return s.id;}));updateCards();updateGenBtn();};
   qr.appendChild(bAll);
   const bNone=document.createElement('button');bNone.className='btn-sm';bNone.textContent='Снять всё';
-  bNone.onclick=function(){S.selectedIds=new Set();updateCards();updateGenBtn();};
+  bNone.onclick=function(){pushSelHistory();S.selectedIds=new Set();updateCards();updateGenBtn();};
   qr.appendChild(bNone);
 
   const list=document.getElementById('sceneList');
@@ -874,8 +916,8 @@ function renderShotList(){
   updateGenBtn();
 }
 
-function selRange(from,to){S.shotList.scenes.slice(from,to).forEach(function(s){S.selectedIds.add(s.id);});updateCards();updateGenBtn();}
-function toggleSc(id){if(S.selectedIds.has(id))S.selectedIds.delete(id);else S.selectedIds.add(id);updateCards();updateGenBtn();}
+function selRange(from,to){pushSelHistory();S.shotList.scenes.slice(from,to).forEach(function(s){S.selectedIds.add(s.id);});updateCards();updateGenBtn();}
+function toggleSc(id){pushSelHistory();if(S.selectedIds.has(id))S.selectedIds.delete(id);else S.selectedIds.add(id);updateCards();updateGenBtn();}
 function updateCards(){
   S.shotList.scenes.forEach(function(s){
     const card=document.getElementById('sc-'+s.id),chk=document.getElementById('chk-'+s.id);
@@ -885,9 +927,17 @@ function updateCards(){
   });
 }
 function updateGenBtn(){
-  const btn=document.getElementById('generateBtn');const n=S.selectedIds.size;
-  btn.style.display=n>0?'block':'none';
-  btn.textContent='ГЕНЕРИРОВАТЬ ПРОМТЫ ДЛЯ ВЫБРАННЫХ ('+n+')';
+  const wrap=document.getElementById('generateBtnWrap');
+  const btn=document.getElementById('generateBtn');
+  const n=S.selectedIds.size;
+  if(wrap)wrap.style.display=n>0?'block':'none';
+  if(btn)btn.textContent='ГЕНЕРИРОВАТЬ ПРОМТЫ ДЛЯ ВЫБРАННЫХ ('+n+')';
+}
+
+function toggleAutoAngles(){
+  S.autoAngles=!S.autoAngles;
+  const track=document.getElementById('autoAnglesTrack');
+  if(track){if(S.autoAngles)track.classList.add('on');else track.classList.remove('on');}
 }
 
 // ─── GENERATE PROMPTS ─────────────────────────────────────────────────────
@@ -925,14 +975,21 @@ async function generatePrompts(){
       renderPrompts(batch);
 
       if(i+BATCH<selected.length){
-        for(let c=4;c>0;c--){
+        const batchPause=randPause(8,15);
+        for(let c=batchPause;c>0;c--){
           document.getElementById('generateTxt').textContent='Пауза перед следующей группой: '+c+'с...';
           await new Promise(function(r){setTimeout(r,1000);});
         }
       }
     }
 
+    saveSession();
     setTimeout(function(){document.getElementById('promptSection').scrollIntoView({behavior:'smooth',block:'start'});},100);
+
+    if(S.autoAngles){
+      await generateAllAngles();
+    }
+
   }catch(e){
     document.getElementById('generateError').textContent='Ошибка генерации: '+e.message;
     document.getElementById('generateError').style.display='block';
@@ -972,15 +1029,20 @@ function renderPrompts(scenes){
       '</div>'+
       '<div class="pc-body">'+
         '<div class="'+(isAI?'pc-prompt':'pc-ae')+'" id="pt-'+sc.id+'">'+(isAI?(p.prompt||''):(p.ae_brief||''))+'</div>'+
+        (isAI?'<div class="prompt-warn" id="pw-'+sc.id+'" style="display:none"></div>':'')+
+        '<div class="history-bar" id="hb-'+sc.id+'" style="display:none"></div>'+
       '</div>'+
       '<div class="angles-wrap" id="ang-'+sc.id+'" style="display:none"></div>';
     list.appendChild(card);
+    if(isAI){renderPromptWarnings(sc.id);renderHistoryBar(sc.id);}
   });
 
   document.getElementById('exportBar').innerHTML=
     '<button class="btn-ghost" onclick="copyAll()">Копировать всё</button>'+
     '<button class="btn-ghost" onclick="exportCowork()">Экспорт для Flow</button>'+
+    '<button class="btn-ghost" onclick="exportTxt()">Скачать .txt</button>'+
     '<button class="btn-ghost" onclick="exportJSON()">Скачать JSON</button>';
+  updateGenAllAnglesBtn();
 }
 
 function buildRegenMenu(id){
@@ -1041,8 +1103,15 @@ async function regenPrompt(id,styleKey,customCtx){
   const prompt='You are a cinematic director of photography for science documentary.\n\nRegenerate a visual shot for this scene with a fresh directorial approach.\nScene: "'+sc.description+'"\nExcerpt: "'+sc.excerpt+'"\n\nStyle override: '+styleOverride+'\nProject style: '+styleCtx()+'\n\nRULES:\n- Start with a specific camera move and shot type (e.g. "Slow push-in extreme wide shot...", "Low-angle close-up...", "Overhead drone descending...")\n- Pure visual — NO text, labels, overlays, subtitles, UI elements\n- 80-120 words\n- End with: "'+QUALITY_SUFFIX+'"\n\nReturn ONLY valid JSON: {"prompt":"..."}';
 
   try{
+    const regenWait=randPause(4,7);
+    for(let c=regenWait;c>0;c--){
+      const el=document.getElementById('generateTxt');
+      if(el)el.textContent='Перегенерация: '+c+'с...';
+      await new Promise(function(r){setTimeout(r,1000);});
+    }
     const raw=await geminiCall(prompt,2000,'generateTxt');
     const data=safeParseJSON(raw);
+    pushHistory(id);
     p.prompt=data.prompt;
     if(ptEl){ptEl.textContent=p.prompt;ptEl.style.opacity='1';}
     p.angles=[];
@@ -1050,6 +1119,10 @@ async function regenPrompt(id,styleKey,customCtx){
     if(angWrap){angWrap.style.display='none';angWrap.innerHTML='';}
     const expBtn=document.getElementById('expbtn-'+id);
     if(expBtn){expBtn.disabled=false;expBtn.innerHTML='+ 4 ракурса';expBtn.classList.remove('spinning');}
+    renderPromptWarnings(id);
+    renderHistoryBar(id);
+    updateGenAllAnglesBtn();
+    saveSession();
   }catch(e){
     if(ptEl)ptEl.style.opacity='1';
     alert('Ошибка перегенерации: '+e.message);
@@ -1059,7 +1132,7 @@ async function regenPrompt(id,styleKey,customCtx){
 }
 
 // ─── EXPAND ANGLES ────────────────────────────────────────────────────────
-async function expandAngles(id){
+async function expandAngles(id,silent){
   const btn=document.getElementById('expbtn-'+id);
   if(btn){btn.disabled=true;btn.innerHTML='<span>&#8987;</span>';btn.classList.add('spinning');}
   const p=S.prompts[id];
@@ -1069,6 +1142,12 @@ async function expandAngles(id){
   const prompt='You are a cinematic director of photography creating a shot list for a science documentary.\n\nThe original shot for this scene:\n"'+p.prompt+'"\n\nScene subject: "'+sc.description+'"\nStyle: '+styleCtx()+'\n\nCreate 3 additional shots for the SAME scene moment. Each shot must feel like a DIFFERENT directorial decision — not just a zoom of the original.\n\nThink like a real DP building a sequence:\n- СРЕДНИЙ: shift the SUBJECT — find a secondary element in the scene that tells the same story from a different angle. Different framing, different focal point.\n- МАКРО: isolate one physical DETAIL that symbolizes the whole scene. Extreme close-up. Texture, surface, particle, glow. Make it poetic.\n- ТВОРЧЕСКИЙ: break the rules — silhouette, reflection, abstract, unusual POV (from inside, from above, from behind), or a moment in time (just before, just after). Unexpected but purposeful.\n\nRULES:\n- NO text, labels, overlays, UI elements in any shot\n- Each shot must have a clearly different camera position and focal length than the others\n- Each prompt 80-120 words\n- End every prompt with: "'+QUALITY_SUFFIX+'"\n\nReturn ONLY valid JSON:\n{"angles":[{"label":"СРЕДНИЙ","prompt":"..."},{"label":"МАКРО","prompt":"..."},{"label":"ТВОРЧЕСКИЙ","prompt":"..."}]}';
 
   try{
+    const prePause=randPause(5,8);
+    for(let c=prePause;c>0;c--){
+      const el=document.getElementById('generateTxt');
+      if(el)el.textContent='Подготовка ракурсов: '+c+'с...';
+      await new Promise(function(r){setTimeout(r,1000);});
+    }
     const raw=await geminiCall(prompt,5000,'generateTxt');
     const data=safeParseJSON(raw);
     p.angles=data.angles;
@@ -1085,9 +1164,12 @@ async function expandAngles(id){
       '</div>';
     }).join('');
     if(btn){btn.innerHTML='✓ Готово';btn.classList.remove('spinning');}
+    updateGenAllAnglesBtn();
+    saveSession();
   }catch(e){
     if(btn){btn.disabled=false;btn.innerHTML='+ 4 ракурса';btn.classList.remove('spinning');}
-    alert('Ошибка: '+e.message);
+    if(!silent)alert('Ошибка: '+e.message);
+    else throw e;
   }
 }
 
@@ -1153,10 +1235,268 @@ function exportJSON(){
   a.download='promptforge.json';a.click();
 }
 
+// ─── SESSION CACHE ────────────────────────────────────────────────────────
+function saveSession(){
+  try{
+    const data={
+      shotList:S.shotList,
+      prompts:S.prompts,
+      promptHistory:S.promptHistory,
+      projectType:S.projectType,projectTypeCustom:S.projectTypeCustom,
+      tone:S.tone,styleNotes:S.styleNotes,
+      videoDurationSec:S.videoDurationSec,
+      voiceoverText:S.voiceoverText,
+      savedAt:Date.now()
+    };
+    localStorage.setItem('pf_session',JSON.stringify(data));
+  }catch(e){console.warn('[saveSession]',e);}
+}
+
+function loadSession(){
+  try{
+    const raw=localStorage.getItem('pf_session');
+    if(!raw)return;
+    const data=JSON.parse(raw);
+    if(!data.shotList||!data.shotList.scenes||!data.shotList.scenes.length)return;
+    const ageMin=Math.round((Date.now()-data.savedAt)/60000);
+    const bar=document.getElementById('restoreBar');
+    bar.className='restore-bar';
+    bar.innerHTML=
+      '<span class="restore-txt">Найдена сохранённая сессия · '+data.shotList.scenes.length+' сцен · '+
+        (ageMin<60?ageMin+' мин. назад':(Math.round(ageMin/60))+' ч. назад')+'</span>'+
+      '<div class="restore-btns">'+
+        '<button class="btn-restore" onclick="restoreSession()">Восстановить</button>'+
+        '<button class="btn-discard" onclick="discardSession()">Удалить</button>'+
+      '</div>';
+    bar.style.display='flex';
+    bar._pending=data;
+  }catch(e){console.warn('[loadSession]',e);}
+}
+
+function restoreSession(){
+  const bar=document.getElementById('restoreBar');
+  const data=bar._pending;if(!data)return;
+  bar.style.display='none';
+  S.shotList=data.shotList;
+  S.prompts=data.prompts||{};
+  S.promptHistory=data.promptHistory||{};
+  S.projectType=data.projectType||'space';
+  S.projectTypeCustom=data.projectTypeCustom||'';
+  S.tone=data.tone||35;
+  S.styleNotes=data.styleNotes||'';
+  S.videoDurationSec=data.videoDurationSec||0;
+  S.voiceoverText=data.voiceoverText||'';
+  S.selectedIds=new Set();
+  // restore UI
+  document.getElementById('toneSlider').value=S.tone;
+  document.getElementById('toneVal').textContent=getToneLbl(S.tone);
+  if(S.styleNotes)document.getElementById('styleNotes').value=S.styleNotes;
+  if(S.voiceoverText){document.getElementById('voiceoverText').value=S.voiceoverText;updateWordCountVO();}
+  if(S.videoDurationSec){
+    const m=Math.floor(S.videoDurationSec/60),s=S.videoDurationSec%60;
+    document.getElementById('durationInput').value=m+':'+(s<10?'0':'')+s;
+    updateDurCalc();
+  }
+  // restore project type active button
+  document.querySelectorAll('.type-btn').forEach(function(b,i){
+    const id=Object.keys(TYPES)[i];
+    if(id===S.projectType)b.classList.add('active');else b.classList.remove('active');
+  });
+  renderShotList();
+  document.getElementById('shotSection').style.display='block';
+  if(Object.keys(S.prompts).length){
+    document.getElementById('promptSection').style.display='block';
+    const aiScenes=S.shotList.scenes.filter(function(s){return S.selectedIds.has(s.id)||Object.keys(S.prompts).map(Number).indexOf(s.id)>-1;});
+    const promptedScenes=S.shotList.scenes.filter(function(s){return S.prompts[s.id];});
+    if(promptedScenes.length){
+      renderPrompts(promptedScenes);
+      updateGenAllAnglesBtn();
+    }
+  }
+}
+
+function discardSession(){
+  localStorage.removeItem('pf_session');
+  document.getElementById('restoreBar').style.display='none';
+}
+
+// ─── PROMPT HISTORY ───────────────────────────────────────────────────────
+function pushHistory(id){
+  const p=S.prompts[id];if(!p)return;
+  if(!S.promptHistory[id])S.promptHistory[id]=[];
+  const snap={prompt:p.prompt||'',ae_brief:p.ae_brief||'',angles:(p.angles||[]).slice(),label:new Date().toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'})};
+  S.promptHistory[id].unshift(snap);
+  if(S.promptHistory[id].length>3)S.promptHistory[id].pop();
+}
+
+function restoreHistory(id,idx){
+  const h=S.promptHistory[id];if(!h||!h[idx])return;
+  const snap=h[idx];
+  S.prompts[id].prompt=snap.prompt;
+  S.prompts[id].ae_brief=snap.ae_brief;
+  S.prompts[id].angles=snap.angles;
+  const ptEl=document.getElementById('pt-'+id);
+  if(ptEl)ptEl.textContent=snap.prompt||snap.ae_brief||'';
+  const angWrap=document.getElementById('ang-'+id);
+  if(angWrap){
+    if(snap.angles&&snap.angles.length){
+      angWrap.style.display='flex';
+      angWrap.innerHTML=snap.angles.map(function(a,i){
+        const safePrompt=a.prompt.replace(/\\/g,'\\\\').replace(/`/g,"'").replace(/'/g,'&#39;');
+        return '<div class="angle-item">'+
+          '<div class="angle-top"><span class="angle-lbl">'+a.label+'</span>'+
+          '<button class="btn-sm" id="acpbtn-'+id+'-'+i+'" onclick="copyAngle(\'acpbtn-'+id+'-'+i+'\','+i+','+id+')">Копировать</button></div>'+
+          '<div class="angle-txt" id="at-'+id+'-'+i+'">'+a.prompt+'</div></div>';
+      }).join('');
+    }else{angWrap.style.display='none';angWrap.innerHTML='';}
+  }
+  renderHistoryBar(id);
+  saveSession();
+}
+
+function renderHistoryBar(id){
+  const h=S.promptHistory[id];
+  const wrap=document.getElementById('hb-'+id);
+  if(!wrap)return;
+  if(!h||!h.length){wrap.style.display='none';return;}
+  wrap.style.display='flex';
+  wrap.innerHTML='<span class="history-lbl">История:</span>'+
+    h.map(function(snap,i){
+      return '<button class="btn-hist'+(i===0?' current':'')+'" onclick="restoreHistory('+id+','+i+')" title="'+snap.prompt.slice(0,80)+'...">'+snap.label+'</button>';
+    }).join('');
+}
+
+// ─── PROMPT VALIDATION ────────────────────────────────────────────────────
+function validatePrompt(text,type){
+  const warnings=[];
+  if(type!=='ae'){
+    if(text.length<100)warnings.push('Промт слишком короткий (<100 символов)');
+    const low=text.toLowerCase();
+    if(low.indexOf('text')>-1||low.indexOf('label')>-1||low.indexOf('subtitle')>-1||low.indexOf('title')>-1||low.indexOf('caption')>-1)
+      warnings.push('Возможно содержит текстовые элементы (text/label/title)');
+    if(text.indexOf(QUALITY_SUFFIX.slice(0,20))===-1)
+      warnings.push('Нет суффикса качества (8K ultra...)');
+  }
+  return warnings;
+}
+
+function renderPromptWarnings(id){
+  const p=S.prompts[id];if(!p)return;
+  const w=validatePrompt(p.prompt||'',p.type);
+  const el=document.getElementById('pw-'+id);
+  if(!el)return;
+  if(w.length){el.style.display='block';el.textContent='⚠ '+w.join(' · ');}
+  else{el.style.display='none';}
+}
+
+// ─── SELECTION UNDO ───────────────────────────────────────────────────────
+function pushSelHistory(){
+  S.selHistory.push(new Set(S.selectedIds));
+  if(S.selHistory.length>20)S.selHistory.shift();
+}
+
+function undoSelection(){
+  if(!S.selHistory.length)return;
+  S.selectedIds=S.selHistory.pop();
+  updateCards();
+  updateGenBtn();
+}
+
+document.addEventListener('keydown',function(e){
+  if((e.ctrlKey||e.metaKey)&&e.key==='z'&&!e.shiftKey){
+    if(S.shotList&&S.selHistory.length){e.preventDefault();undoSelection();}
+  }
+});
+
+// ─── GEN ALL ANGLES ───────────────────────────────────────────────────────
+function updateGenAllAnglesBtn(){
+  const btn=document.getElementById('genAllAnglesBtn');
+  if(!btn)return;
+  const aiIds=Object.keys(S.prompts).filter(function(id){
+    const p=S.prompts[id];return p&&p.type!=='ae'&&p.prompt&&(!p.angles||!p.angles.length);
+  });
+  btn.style.display=aiIds.length>0?'inline-block':'none';
+  btn.textContent='+ Все ракурсы ('+aiIds.length+')';
+}
+
+async function generateAllAngles(){
+  const btn=document.getElementById('genAllAnglesBtn');
+  const aiIds=Object.keys(S.prompts).filter(function(id){
+    const p=S.prompts[id];return p&&p.type!=='ae'&&p.prompt&&(!p.angles||!p.angles.length);
+  });
+  if(!aiIds.length)return;
+  btn.disabled=true;btn.textContent='Генерирую...';btn.style.animation='blink 1s infinite';
+  for(let i=0;i<aiIds.length;i++){
+    const id=+aiIds[i];
+    const expBtn=document.getElementById('expbtn-'+id);
+    if(expBtn){expBtn.disabled=true;expBtn.innerHTML='<span>&#8987;</span>';expBtn.classList.add('spinning');}
+    document.getElementById('generateTxt')||(document.getElementById('promptSection').querySelector('.load-txt'));
+    const el=document.getElementById('generateTxt');
+    if(el)el.textContent='Ракурсы '+(i+1)+' из '+aiIds.length+'...';
+    try{await expandAngles(id,true);}catch(e){console.warn('[genAllAngles] scene '+id,e);}
+    if(i<aiIds.length-1){
+      const w=randPause(6,10);
+      for(let c=w;c>0;c--){
+        const el2=document.getElementById('generateTxt');
+        if(el2)el2.textContent='Пауза '+(i+1)+'/'+aiIds.length+': '+c+'с...';
+        await new Promise(function(r){setTimeout(r,1000);});
+      }
+    }
+  }
+  btn.disabled=false;btn.style.animation='';
+  updateGenAllAnglesBtn();
+  saveSession();
+}
+
+// ─── EXPORT TXT ───────────────────────────────────────────────────────────
+function exportTxt(){
+  const lines=[];
+  const proj=TYPES[S.projectType]?TYPES[S.projectType].label:S.projectTypeCustom||S.projectType;
+  lines.push('PROMPTFORGE EXPORT');
+  lines.push('Проект: '+proj+' · Тон: '+getToneLbl(S.tone)+(S.styleNotes?' · '+S.styleNotes:''));
+  if(S.videoDurationSec)lines.push('Длительность: '+fmtTime(S.videoDurationSec));
+  lines.push('Экспорт: '+new Date().toLocaleString('ru'));
+  lines.push('');
+  lines.push('═'.repeat(60));
+  lines.push('');
+
+  Object.entries(S.prompts).forEach(function(entry){
+    const id=entry[0],p=entry[1];
+    const sc=S.shotList&&S.shotList.scenes.find(function(s){return s.id==id;});
+    const timeStr=sc&&sc.start_time?(' · '+sc.start_time+'–'+sc.end_time):'';
+    const typeLbl=p.type==='ai'?'AI':p.type==='ae'?'AE':'HYBRID';
+    lines.push('['+typeLbl+'] Сцена '+id+timeStr);
+    if(sc)lines.push('"'+sc.excerpt+'…"');
+    lines.push('');
+    if(p.type==='ae'){
+      lines.push(p.ae_brief||'');
+    }else{
+      lines.push(p.prompt||'');
+      if(p.angles&&p.angles.length){
+        lines.push('');
+        p.angles.forEach(function(a){
+          lines.push('['+a.label+']');
+          lines.push(a.prompt);
+          lines.push('');
+        });
+      }
+    }
+    lines.push('─'.repeat(60));
+    lines.push('');
+  });
+
+  const blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='promptforge_export.txt';
+  a.click();
+}
+
 // ─── INIT ─────────────────────────────────────────────────────────────────
 initTypes();
 initStyleChips();
 loadSavedKeys();
+loadSession();
 </script>
 </body>
 </html>
