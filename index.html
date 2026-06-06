@@ -53,7 +53,7 @@ canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:n
 .type-btn .tip{position:absolute;bottom:calc(100% + 7px);left:50%;transform:translateX(-50%);width:190px;background:#07122a;border:1px solid rgba(74,158,255,0.25);border-radius:3px;padding:7px 10px;font-size:9px;color:rgba(185,220,255,0.85);letter-spacing:0.5px;line-height:1.5;pointer-events:none;opacity:0;transition:opacity 0.15s;z-index:200;text-align:left;white-space:normal}
 .type-btn:hover .tip{opacity:1}
 .type-btn .tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#07122a}
-.style-blocks{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:10px}
+.style-blocks{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:10px}
 .style-block-col{display:flex;flex-direction:column;gap:5px}
 .style-block-lbl{font-size:8px;letter-spacing:2px;color:rgba(150,195,255,0.65);text-transform:uppercase;margin-bottom:3px;padding-bottom:5px;border-bottom:1px solid rgba(60,120,255,0.15)}
 .style-opt{position:relative;background:rgba(5,12,30,0.8);border:1px solid rgba(60,120,255,0.2);border-radius:3px;color:rgba(175,215,255,0.8);font-size:9px;letter-spacing:0.5px;padding:5px 9px;cursor:pointer;transition:all 0.15s;font-family:'Courier New',monospace;text-align:left;width:100%}
@@ -62,7 +62,8 @@ canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:n
 .style-opt .tip{position:absolute;bottom:calc(100% + 7px);left:0;width:200px;background:#07122a;border:1px solid rgba(74,158,255,0.25);border-radius:3px;padding:7px 10px;font-size:9px;color:rgba(185,220,255,0.85);letter-spacing:0.5px;line-height:1.5;pointer-events:none;opacity:0;transition:opacity 0.15s;z-index:200;white-space:normal}
 .style-opt:hover .tip{opacity:1}
 .style-opt .tip::after{content:'';position:absolute;top:100%;left:14px;border:5px solid transparent;border-top-color:#07122a}
-@media(max-width:700px){.style-blocks{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:800px){.style-blocks{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:500px){.style-blocks{grid-template-columns:repeat(2,1fr)}}
 
 .tone-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
 .tone-lbl{font-size:9px;letter-spacing:1px;color:rgba(140,185,255,0.7);white-space:nowrap}
@@ -387,7 +388,7 @@ const REGEN_STYLES=[
   {cat:'РЕНДЕР',        key:'stylized',    lbl:'Stylized (без фотореализма)',     ctx:'Stylized non-photorealistic, artistic rendering, exaggerated beautiful forms, fantasy aesthetic'},
 ];
 
-const QUALITY_SUFFIX='8K ultra resolution, photorealistic, volumetric lighting, ray-traced, ultra-sharp focus, HDR, cinema-grade color grading, science documentary.';
+const QUALITY_SUFFIX='8K ultra resolution, photorealistic, ultra-sharp focus, cinema-grade color grading, restrained and elegant, no excessive visual noise, no oversaturated colors, no cheap CGI glow — cinematic restraint, Interstellar / BBC aesthetic.';
 
 function getToneLbl(v){return v<20?'Очень эпичный':v<40?'Кинематографичный':v<60?'Сбалансированный':v<80?'Образовательный':'Очень ясный';}
 function getToneCtx(v){return v<25?'Dramatic, cinematic, moody, atmospheric, epic scale':v<50?'Cinematic documentary, epic but clear, dramatic lighting':v<75?'Balanced science documentary, engaging and clear':'Educational, bright, clean composition, accessible';}
@@ -565,6 +566,7 @@ const STYLE_BLOCKS=[
       {key:'scientific',label:'Научный',        ctx:'Cold scientific precision, clean sterile lighting, clinical, analytical, no emotional manipulation',      tip:'Холодный и точный. Никакой лишней драмы — только факт и структура.'},
       {key:'mystic',    label:'Мистический',    ctx:'Mysterious, ethereal, otherworldly glow, dreamlike quality, surreal beauty, unknown forces at work',     tip:'Потусторонний, загадочный. Свет как будто изнутри, граница между мирами.'},
       {key:'warm',      label:'Тёплый / Уютный',ctx:'Warm inviting tones, golden amber light, life-affirming, cozy, safe, vibrant and joyful',                tip:'Золотой свет, тепло, радость. Подходит для детского контента и природы.'},
+      {key:'mystery',   label:'Таинственный',   ctx:'Mysterious, unknown, things half-revealed, deep shadows hiding secrets, quiet dread of the unknown, sparse and restrained visuals that suggest more than they show', tip:'Что-то скрыто. Больше намёк, чем показ. Тишина и пустота как инструмент.'},
     ]
   },
   {
@@ -602,6 +604,16 @@ const STYLE_BLOCKS=[
       {key:'slow',      label:'Медленный',       ctx:'Slow meditative pace, long holds, time to breathe, contemplative rhythm, unhurried beauty',             tip:'Долгие планы, время на осмысление. Медитативно и созерцательно.'},
       {key:'dynamic',   label:'Динамичный',      ctx:'Dynamic energetic pace, motion and action, quick cuts implied, sense of movement and urgency',           tip:'Энергия, движение, ощущение действия. Быстрый монтаж.'},
       {key:'timelapse', label:'Тайм-лапс',       ctx:'Time-lapse aesthetic, compressed time, star trails, flowing clouds, blooming flowers, light streaks',   tip:'Сжатое время. Звёздные треки, облака, цветение — всё в ускорении.'},
+    ]
+  },
+  {
+    id:'time', label:'ВРЕМЯ / СРЕДА', single:true,
+    opts:[
+      {key:'day',       label:'День',            ctx:'Bright daylight, clear sky, sharp natural lighting, full visibility, sun high',                          tip:'Яркий солнечный день. Максимальная видимость, естественный свет.'},
+      {key:'golden',    label:'Закат / Рассвет', ctx:'Golden hour, sun low on horizon, warm long shadows, sky transitioning between day and night',            tip:'Солнце у горизонта. Самый кинематографичный момент суток.'},
+      {key:'night',     label:'Ночь / Звёзды',   ctx:'Night time, stars visible, moonlight or artificial light only, deep shadows, quiet and still',          tip:'Ночь. Звёздное небо, лунный свет, тишина и темнота.'},
+      {key:'underwater',label:'Под водой',        ctx:'Underwater environment, light filtering from above, particles suspended, aquatic blue-green tones',     tip:'Подводный мир. Рассеянный свет сверху, взвешенные частицы.'},
+      {key:'interior',  label:'Интерьер',         ctx:'Interior environment, controlled lighting, architectural space, enclosed and defined setting',          tip:'Закрытое пространство. Архитектура, студия, лаборатория, пещера.'},
     ]
   },
 ];
@@ -1038,7 +1050,7 @@ async function generatePrompts(){
 
   const BATCH=5;
   const styleGuide=styleCtx();
-  const instructionPrompt='You are an elite cinematographer and visual director for science documentary.\n\nStyle guide: '+styleGuide+'\n\nRULES FOR AI PROMPTS:\n- Write ONE cinematic image prompt in English (80-120 words)\n- Structure: CAMERA MOVE + SUBJECT in ACTION + ENVIRONMENT + LIGHT + MOOD + RENDER QUALITY\n- Each prompt must have a UNIQUE camera position: establish the shot type first (extreme wide, wide, medium, close-up, extreme close-up, overhead, low angle, dutch angle, POV)\n- NO text, labels, titles, subtitles, overlays, UI elements, HUD — pure visual only\n- NO people unless the scene explicitly requires it\n- End every AI prompt with: "'+QUALITY_SUFFIX+'"\n\nRULES FOR AE SCENES:\n- Write in Russian (2-3 sentences): what to animate, what data to show\n- Motion graphics only: flowing lines, glowing orbits, pulsing dots, scale comparisons — NO readable text blocks\n\nRULES FOR HYBRID SCENES:\n- Write the AI cinematic prompt (pure visual, no text)\n- Add "// AE overlay:" describing only abstract HUD elements: glowing rings, trajectory lines, pulsing energy fields, geometric overlays — nothing that requires readable text\n\n';
+  const instructionPrompt='You are an elite cinematographer and visual director for science documentary.\n\nStyle guide: '+styleGuide+'\n\nRULES FOR AI PROMPTS:\n- Write ONE cinematic image prompt in English (80-120 words)\n- Structure: CAMERA MOVE + SUBJECT in ACTION + ENVIRONMENT + LIGHT + MOOD + RENDER QUALITY\n- Each prompt must have a UNIQUE camera position: establish the shot type first (extreme wide, wide, medium, close-up, extreme close-up, overhead, low angle, dutch angle, POV)\n- BACKGROUND DISCIPLINE: backgrounds must be restrained and intentional — deep black space with sparse stars, not colorful nebula soup; dark environments, not busy cluttered scenes. Think Interstellar, not a 90s screensaver. If a nebula or color is needed, it must serve the story, not decorate.\n- COLOR RESTRAINT: avoid oversaturation. Prefer muted, desaturated, or selectively colored palettes. One dominant color accent maximum.\n- NO text, labels, titles, subtitles, overlays, UI elements, HUD — pure visual only\n- NO people unless the scene explicitly requires it\n- End every AI prompt with: "'+QUALITY_SUFFIX+'"\n\nRULES FOR AE SCENES:\n- Write in Russian (2-3 sentences): what to animate, what data to show\n- Motion graphics only: flowing lines, glowing orbits, pulsing dots, scale comparisons — NO readable text blocks\n\nRULES FOR HYBRID SCENES:\n- Write the AI cinematic prompt (pure visual, no text)\n- Add "// AE overlay:" describing only abstract HUD elements: glowing rings, trajectory lines, pulsing energy fields, geometric overlays — nothing that requires readable text\n\n';
 
   try{
     document.getElementById('promptSection').style.display='block';
@@ -1187,7 +1199,7 @@ async function regenPrompt(id,styleKey,customCtx){
   const regenBtn=document.querySelector('#rw-'+id+' .btn-regen');
   if(regenBtn){regenBtn.textContent='↺ ...';regenBtn.disabled=true;}
 
-  const prompt='You are a cinematic director of photography for science documentary.\n\nRegenerate a visual shot for this scene with a fresh directorial approach.\nScene: "'+sc.description+'"\nExcerpt: "'+sc.excerpt+'"\n\nStyle override: '+styleOverride+'\nProject style: '+styleCtx()+'\n\nRULES:\n- Start with a specific camera move and shot type (e.g. "Slow push-in extreme wide shot...", "Low-angle close-up...", "Overhead drone descending...")\n- Pure visual — NO text, labels, overlays, subtitles, UI elements\n- 80-120 words\n- End with: "'+QUALITY_SUFFIX+'"\n\nReturn ONLY valid JSON: {"prompt":"..."}';
+  const prompt='You are a cinematic director of photography for science documentary.\n\nRegenerate a visual shot for this scene with a fresh directorial approach.\nScene: "'+sc.description+'"\nExcerpt: "'+sc.excerpt+'"\n\nStyle override: '+styleOverride+'\nProject style: '+styleCtx()+'\n\nRULES:\n- Start with a specific camera move and shot type (e.g. "Slow push-in extreme wide shot...", "Low-angle close-up...", "Overhead drone descending...")\n- BACKGROUND: restrained and intentional — deep black space with sparse stars, dark environments. Think Interstellar, not a screensaver.\n- COLOR: avoid oversaturation, one dominant color accent maximum, muted and elegant palette\n- Pure visual — NO text, labels, overlays, subtitles, UI elements\n- 80-120 words\n- End with: "'+QUALITY_SUFFIX+'"\n\nReturn ONLY valid JSON: {"prompt":"..."}';
 
   try{
     const regenWait=randPause(4,7);
@@ -1226,7 +1238,7 @@ async function expandAngles(id,silent){
   const sc=S.shotList.scenes.find(function(s){return s.id===id;});
   if(!p||!sc){if(btn){btn.disabled=false;btn.innerHTML='+ 4 ракурса';btn.classList.remove('spinning');}return;}
 
-  const prompt='You are a cinematic director of photography creating a shot list for a science documentary.\n\nThe original shot for this scene:\n"'+p.prompt+'"\n\nScene subject: "'+sc.description+'"\nStyle: '+styleCtx()+'\n\nCreate 3 additional shots for the SAME scene moment. Each shot must feel like a DIFFERENT directorial decision — not just a zoom of the original.\n\nThink like a real DP building a sequence:\n- СРЕДНИЙ: shift the SUBJECT — find a secondary element in the scene that tells the same story from a different angle. Different framing, different focal point.\n- МАКРО: isolate one physical DETAIL that symbolizes the whole scene. Extreme close-up. Texture, surface, particle, glow. Make it poetic.\n- ТВОРЧЕСКИЙ: break the rules — silhouette, reflection, abstract, unusual POV (from inside, from above, from behind), or a moment in time (just before, just after). Unexpected but purposeful.\n\nRULES:\n- NO text, labels, overlays, UI elements in any shot\n- Each shot must have a clearly different camera position and focal length than the others\n- Each prompt 80-120 words\n- End every prompt with: "'+QUALITY_SUFFIX+'"\n\nReturn ONLY valid JSON:\n{"angles":[{"label":"СРЕДНИЙ","prompt":"..."},{"label":"МАКРО","prompt":"..."},{"label":"ТВОРЧЕСКИЙ","prompt":"..."}]}';
+  const prompt='You are a cinematic director of photography creating a shot list for a science documentary.\n\nThe original shot for this scene:\n"'+p.prompt+'"\n\nScene subject: "'+sc.description+'"\nStyle: '+styleCtx()+'\n\nCreate 3 additional shots for the SAME scene moment. Each shot must feel like a DIFFERENT directorial decision — not just a zoom of the original.\n\nThink like a real DP building a sequence:\n- СРЕДНИЙ: shift the SUBJECT — find a secondary element in the scene that tells the same story from a different angle. Different framing, different focal point.\n- МАКРО: isolate one physical DETAIL that symbolizes the whole scene. Extreme close-up. Texture, surface, particle, glow. Make it poetic.\n- ТВОРЧЕСКИЙ: break the rules — silhouette, reflection, abstract, unusual POV (from inside, from above, from behind), or a moment in time (just before, just after). Unexpected but purposeful.\n\nRULES:\n- BACKGROUND: restrained and intentional — deep space means sparse stars on true black, not colorful nebula clutter. Think Interstellar.\n- COLOR: muted and elegant, avoid oversaturation, one dominant accent color maximum\n- NO text, labels, overlays, UI elements in any shot\n- Each shot must have a clearly different camera position and focal length than the others\n- Each prompt 80-120 words\n- End every prompt with: "'+QUALITY_SUFFIX+'"\n\nReturn ONLY valid JSON:\n{"angles":[{"label":"СРЕДНИЙ","prompt":"..."},{"label":"МАКРО","prompt":"..."},{"label":"ТВОРЧЕСКИЙ","prompt":"..."}]}';
 
   try{
     const prePause=randPause(5,8);
