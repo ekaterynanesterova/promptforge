@@ -954,7 +954,7 @@ async function analyzeScript(){
     let idCounter=1;
 
     for(let i=0;i<chunks.length;i++){
-      const pause=randPause(10,18);
+      const pause=randPause(2,4);
       document.getElementById('analyzeTxt').textContent=
         'Анализирую часть '+(i+1)+' из '+totalChunks+'...';
 
@@ -1161,7 +1161,7 @@ async function generatePrompts(isResume){
       updateGenBtn();
 
       if(i+BATCH<selected.length){
-        const batchPause=randPause(12,20);
+        const batchPause=randPause(2,4);
         for(let c=batchPause;c>0;c--){
           document.getElementById('generateTxt').textContent='Пауза перед следующей группой: '+c+'с...';
           await new Promise(function(r){setTimeout(r,1000);});
@@ -1296,7 +1296,7 @@ async function regenPrompt(id,styleKey,customCtx){
   const prompt='You are a Director of Photography for science documentary. Regenerate this shot with a completely fresh directorial approach.\n\nScene: "'+sc.description+'"\nExcerpt: "'+sc.excerpt+'"\nStyle override: '+styleOverride+'\nProject style: '+styleCtx()+'\n\nChoose the shot type that BEST SERVES this scene content. Always specify ALL FOUR:\n1. Shot size: ECU (extreme close-up) / CU (close-up) / MS (medium) / WS (wide) / EWS (extreme wide)\n2. Angle: eye level / low angle (subject feels powerful) / high angle (subject feels small) / overhead / dutch (tension)\n3. Movement: static / slow push-in / pull back / orbit around subject / tracking / crane ascend or descend\n4. Depth of field: shallow (bokeh, intimate) / deep (everything sharp, scientific)\n\nRULES:\n- Start prompt with explicit shot type + angle + movement\n- Background: restrained — deep space = true black with sparse stars, Interstellar aesthetic\n- Color: muted palette, one accent maximum, no oversaturation\n- Pure visual — NO text, labels, overlays, UI elements\n- 80-120 words\n- End with: "'+QUALITY_SUFFIX+'"\n\nReturn ONLY valid JSON: {"prompt":"..."}';
 
   try{
-    const regenWait=randPause(4,7);
+    const regenWait=randPause(1,2);
     for(let c=regenWait;c>0;c--){
       const el=document.getElementById('generateTxt');
       if(el)el.textContent='Перегенерация: '+c+'с...';
@@ -1338,7 +1338,7 @@ async function expandAngles(id,silent){
   const prompt='You are a Director of Photography building a multi-angle shot list for a science documentary scene.\n\nOriginal shot:\n"'+p.prompt+'"\n\nScene subject: "'+sc.description+'"\nStyle: '+styleCtx()+'\n\nCreate 3 additional shots. Each must use a DIFFERENT scale, angle, and movement than the original and each other. Think like a real DP who has 4 shots to tell one moment — variety is the goal.\n\nSHOT GUIDELINES:\n- СРЕДНИЙ (Secondary Angle): Different scale or angle than original. If original is wide — go medium or close. If original is static — add movement. Find a secondary element or shift the camera axis completely (opposite side, higher, lower).\n- МАКРО (Detail/Texture): Extreme close-up of one physical detail that represents the whole scene. Surface texture, particle, edge, glow, shadow. Shallow depth of field. Poetic and abstract.\n- ТВОРЧЕСКИЙ (Creative/Unconventional): Break convention — silhouette against light source, reflection in surface, POV from inside/behind/below the subject, Dutch angle for tension, rack focus reveal, or capture the moment just before or just after the main action.\n\nFor each shot ALWAYS specify:\n1. Shot size (ECU / CU / MS / WS / EWS)\n2. Camera angle (eye level / low angle / high angle / overhead / dutch)\n3. Camera movement (static / slow push-in / pull back / orbit / tracking / crane)\n4. Depth of field (shallow bokeh / deep field)\n\nRULES:\n- Background: restrained — deep space means true black with sparse stars. Interstellar aesthetic.\n- Color: muted palette, one accent maximum, no oversaturation\n- NO text, labels, overlays, UI elements\n- Each prompt 80-120 words\n- End every prompt with: "'+QUALITY_SUFFIX+'"\n\nReturn ONLY valid JSON:\n{"angles":[{"label":"СРЕДНИЙ","prompt":"..."},{"label":"МАКРО","prompt":"..."},{"label":"ТВОРЧЕСКИЙ","prompt":"..."}]}';
 
   try{
-    const prePause=randPause(5,8);
+    const prePause=randPause(1,2);
     for(let c=prePause;c>0;c--){
       const el=document.getElementById('generateTxt');
       if(el)el.textContent='Подготовка ракурсов: '+c+'с...';
@@ -1644,7 +1644,7 @@ async function generateAllAngles(){
     if(el)el.textContent='Ракурсы '+(i+1)+' из '+aiIds.length+'...';
     try{await expandAngles(id,true);}catch(e){console.warn('[genAllAngles] scene '+id,e);}
     if(i<aiIds.length-1){
-      const w=randPause(6,10);
+      const w=randPause(2,3);
       for(let c=w;c>0;c--){
         const el2=document.getElementById('generateTxt');
         if(el2)el2.textContent='Пауза '+(i+1)+'/'+aiIds.length+': '+c+'с...';
