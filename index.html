@@ -364,7 +364,8 @@ const S={
   styleBlockCtx:'',
   resumeFrom:null,
   resumeSelected:null,
-  copiedIds:new Set()
+  copiedIds:new Set(),
+  busy:false
 };
 
 const TYPES={
@@ -1111,6 +1112,8 @@ function toggleAutoAngles(){
 
 // ─── GENERATE PROMPTS ─────────────────────────────────────────────────────
 async function generatePrompts(isResume){
+  if(S.busy)return;
+  S.busy=true;
   const resumeBtn=document.getElementById('resumeBtn');
   let selected,startBatch;
   if(isResume&&S.resumeSelected&&S.resumeFrom!==null){
@@ -1183,6 +1186,7 @@ async function generatePrompts(isResume){
     errEl.style.display='block';
     if(resumeBtn&&S.resumeFrom!==null){resumeBtn.style.display='block';}
   }finally{
+    S.busy=false;
     btn.disabled=false;btn.style.animation='';
     updateGenBtn();
     document.getElementById('generateLoad').style.display='none';
@@ -1623,11 +1627,13 @@ function updateGenAllAnglesBtn(){
 }
 
 async function generateAllAngles(){
+  if(S.busy)return;
+  S.busy=true;
   const btn=document.getElementById('genAllAnglesBtn');
   const aiIds=Object.keys(S.prompts).filter(function(id){
     const p=S.prompts[id];return p&&p.type!=='ae'&&p.prompt&&(!p.angles||!p.angles.length);
   });
-  if(!aiIds.length)return;
+  if(!aiIds.length){S.busy=false;return;}
   btn.disabled=true;btn.textContent='Генерирую...';btn.style.animation='blink 1s infinite';
   for(let i=0;i<aiIds.length;i++){
     const id=+aiIds[i];
@@ -1646,6 +1652,7 @@ async function generateAllAngles(){
       }
     }
   }
+  S.busy=false;
   btn.disabled=false;btn.style.animation='';
   updateGenAllAnglesBtn();
   saveSession();
