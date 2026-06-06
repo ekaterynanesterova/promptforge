@@ -517,7 +517,7 @@ function initStyleBlocks(){
   STYLE_BLOCKS.forEach(function(block){
     const div=document.createElement('div');
     div.className='style-block-col';
-    div.innerHTML='<div class="style-block-lbl">'+block.label+'</div><div id="sbg-'+block.id+'"></div>';
+    div.innerHTML='<div class="style-block-lbl">'+block.label+(block.single?'':' <span style="opacity:0.45;font-size:7px">+</span>')+'</div><div id="sbg-'+block.id+'"></div>';
     wrap.appendChild(div);
     const grid=document.getElementById('sbg-'+block.id);
     block.opts.forEach(function(opt){
@@ -527,15 +527,28 @@ function initStyleBlocks(){
       if(opt.tip)b.dataset.tip=opt.tip;
       b.textContent=opt.label;
       b.onclick=function(){
-        if(b.classList.contains('active')){
-          b.classList.remove('active');
-          S.styleSelections=S.styleSelections||{};
-          delete S.styleSelections[block.id];
+        S.styleSelections=S.styleSelections||{};
+        if(block.single){
+          if(b.classList.contains('active')){
+            b.classList.remove('active');
+            delete S.styleSelections[block.id];
+          } else {
+            grid.querySelectorAll('.style-opt').forEach(function(x){x.classList.remove('active');});
+            b.classList.add('active');
+            S.styleSelections[block.id]=opt.key;
+          }
         } else {
-          grid.querySelectorAll('.style-opt').forEach(function(x){x.classList.remove('active');});
-          b.classList.add('active');
-          S.styleSelections=S.styleSelections||{};
-          S.styleSelections[block.id]=opt.key;
+          // multi-select
+          var arr=S.styleSelections[block.id]||[];
+          if(b.classList.contains('active')){
+            b.classList.remove('active');
+            arr=arr.filter(function(k){return k!==opt.key;});
+          } else {
+            b.classList.add('active');
+            arr=arr.concat([opt.key]);
+          }
+          S.styleSelections[block.id]=arr.length?arr:undefined;
+          if(!arr.length)delete S.styleSelections[block.id];
         }
         updateStyleCtxFromBlocks();
       };
@@ -548,18 +561,20 @@ function updateStyleCtxFromBlocks(){
   const sel=S.styleSelections||{};
   const parts=[];
   STYLE_BLOCKS.forEach(function(block){
-    const key=sel[block.id];
-    if(key){
+    const val=sel[block.id];
+    if(!val)return;
+    const keys=Array.isArray(val)?val:[val];
+    keys.forEach(function(key){
       const opt=block.opts.find(function(o){return o.key===key;});
       if(opt)parts.push(opt.ctx);
-    }
+    });
   });
   S.styleBlockCtx=parts.join('. ');
 }
 
 const STYLE_BLOCKS=[
   {
-    id:'atmo', label:'АТМОСФЕРА', single:true,
+    id:'atmo', label:'АТМОСФЕРА', single:false,
     opts:[
       {key:'epic',      label:'Эпичный',       ctx:'Epic, cinematic, dramatic lighting, grand scale, moody atmosphere, overwhelming sense of scale',         tip:'Грандиозные планы, давящий масштаб, тяжёлое небо. Зритель чувствует себя маленьким.'},
       {key:'poetic',    label:'Поэтичный',      ctx:'Poetic, contemplative, slow and beautiful, lyrical, meditative, gentle wonder, soft light',              tip:'Медленный, созерцательный. Красота ради красоты. Мягкий свет, тишина.'},
@@ -608,7 +623,7 @@ const STYLE_BLOCKS=[
     ]
   },
   {
-    id:'time', label:'ВРЕМЯ / СРЕДА', single:true,
+    id:'time', label:'ВРЕМЯ / СРЕДА', single:false,
     opts:[
       {key:'day',       label:'День',            ctx:'Bright daylight, clear sky, sharp natural lighting, full visibility, sun high',                          tip:'Яркий солнечный день. Максимальная видимость, естественный свет.'},
       {key:'golden',    label:'Закат / Рассвет', ctx:'Golden hour, sun low on horizon, warm long shadows, sky transitioning between day and night',            tip:'Солнце у горизонта. Самый кинематографичный момент суток.'},
