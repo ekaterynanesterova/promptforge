@@ -954,7 +954,7 @@ async function analyzeScript(){
     let idCounter=1;
 
     for(let i=0;i<chunks.length;i++){
-      const pause=randPause(2,4);
+      const pause=randPause(3,5);
       document.getElementById('analyzeTxt').textContent=
         'Анализирую часть '+(i+1)+' из '+totalChunks+'...';
 
@@ -1161,7 +1161,7 @@ async function generatePrompts(isResume){
       updateGenBtn();
 
       if(i+BATCH<selected.length){
-        const batchPause=randPause(2,4);
+        const batchPause=randPause(5,8);
         for(let c=batchPause;c>0;c--){
           document.getElementById('generateTxt').textContent='Пауза перед следующей группой: '+c+'с...';
           await new Promise(function(r){setTimeout(r,1000);});
@@ -1644,7 +1644,7 @@ async function generateAllAngles(){
     if(el)el.textContent='Ракурсы '+(i+1)+' из '+aiIds.length+'...';
     try{await expandAngles(id,true);}catch(e){console.warn('[genAllAngles] scene '+id,e);}
     if(i<aiIds.length-1){
-      const w=randPause(2,3);
+      const w=randPause(4,6);
       for(let c=w;c>0;c--){
         const el2=document.getElementById('generateTxt');
         if(el2)el2.textContent='Пауза '+(i+1)+'/'+aiIds.length+': '+c+'с...';
