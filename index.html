@@ -53,15 +53,16 @@ canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:n
 .type-btn .tip{position:absolute;bottom:calc(100% + 7px);left:50%;transform:translateX(-50%);width:190px;background:#07122a;border:1px solid rgba(74,158,255,0.25);border-radius:3px;padding:7px 10px;font-size:9px;color:rgba(185,220,255,0.85);letter-spacing:0.5px;line-height:1.5;pointer-events:none;opacity:0;transition:opacity 0.15s;z-index:200;text-align:left;white-space:normal}
 .type-btn:hover .tip{opacity:1}
 .type-btn .tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#07122a}
-.style-blocks{display:flex;flex-direction:column;gap:12px;margin-bottom:10px}
-.style-block-lbl{font-size:8px;letter-spacing:2px;color:rgba(150,195,255,0.65);text-transform:uppercase;margin-bottom:5px}
-.style-block-grid{display:flex;gap:6px;flex-wrap:wrap}
-.style-opt{position:relative;background:rgba(5,12,30,0.8);border:1px solid rgba(60,120,255,0.2);border-radius:3px;color:rgba(175,215,255,0.8);font-size:9px;letter-spacing:0.5px;padding:5px 11px;cursor:pointer;transition:all 0.15s;font-family:'Courier New',monospace}
+.style-blocks{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:10px}
+.style-block-col{display:flex;flex-direction:column;gap:5px}
+.style-block-lbl{font-size:8px;letter-spacing:2px;color:rgba(150,195,255,0.65);text-transform:uppercase;margin-bottom:3px;padding-bottom:5px;border-bottom:1px solid rgba(60,120,255,0.15)}
+.style-opt{position:relative;background:rgba(5,12,30,0.8);border:1px solid rgba(60,120,255,0.2);border-radius:3px;color:rgba(175,215,255,0.8);font-size:9px;letter-spacing:0.5px;padding:5px 9px;cursor:pointer;transition:all 0.15s;font-family:'Courier New',monospace;text-align:left;width:100%}
 .style-opt:hover{border-color:rgba(74,158,255,0.5);color:#e8f5ff;background:rgba(74,158,255,0.07)}
 .style-opt.active{border-color:rgba(74,158,255,0.65);background:rgba(74,158,255,0.12);color:#ddf0ff}
-.style-opt .tip{position:absolute;bottom:calc(100% + 7px);left:0;width:210px;background:#07122a;border:1px solid rgba(74,158,255,0.25);border-radius:3px;padding:7px 10px;font-size:9px;color:rgba(185,220,255,0.85);letter-spacing:0.5px;line-height:1.5;pointer-events:none;opacity:0;transition:opacity 0.15s;z-index:200;white-space:normal}
+.style-opt .tip{position:absolute;bottom:calc(100% + 7px);left:0;width:200px;background:#07122a;border:1px solid rgba(74,158,255,0.25);border-radius:3px;padding:7px 10px;font-size:9px;color:rgba(185,220,255,0.85);letter-spacing:0.5px;line-height:1.5;pointer-events:none;opacity:0;transition:opacity 0.15s;z-index:200;white-space:normal}
 .style-opt:hover .tip{opacity:1}
 .style-opt .tip::after{content:'';position:absolute;top:100%;left:14px;border:5px solid transparent;border-top-color:#07122a}
+@media(max-width:700px){.style-blocks{grid-template-columns:repeat(2,1fr)}}
 
 .tone-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
 .tone-lbl{font-size:9px;letter-spacing:1px;color:rgba(140,185,255,0.7);white-space:nowrap}
@@ -514,7 +515,8 @@ function initStyleBlocks(){
   wrap.innerHTML='';
   STYLE_BLOCKS.forEach(function(block){
     const div=document.createElement('div');
-    div.innerHTML='<div class="style-block-lbl">'+block.label+'</div><div class="style-block-grid" id="sbg-'+block.id+'"></div>';
+    div.className='style-block-col';
+    div.innerHTML='<div class="style-block-lbl">'+block.label+'</div><div id="sbg-'+block.id+'"></div>';
     wrap.appendChild(div);
     const grid=document.getElementById('sbg-'+block.id);
     block.opts.forEach(function(opt){
