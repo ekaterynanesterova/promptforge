@@ -1010,7 +1010,7 @@ function renderShotList(){
     b.onclick=(function(f,t){return function(){selRange(f,t);};})(i,endIdx);
     qr.appendChild(b);
   }
-  const bAll=document.createElement('button');bAll.className='btn-sm';bAll.textContent='Все AI+Гибрид';
+  const bAll=document.createElement('button');bAll.id='btnAllAI';bAll.className='btn-sm';bAll.textContent='Все AI+Гибрид';
   bAll.onclick=function(){pushSelHistory();S.selectedIds=new Set(scenes.filter(function(s){return s.type!=='ae';}).map(function(s){return s.id;}));updateCards();updateGenBtn();};
   qr.appendChild(bAll);
   const bNone=document.createElement('button');bNone.className='btn-sm';bNone.textContent='Снять всё';
@@ -1042,8 +1042,8 @@ function renderShotList(){
 }
 
 function selRange(from,to){
-  const ids=S.shotList.scenes.slice(from,to).map(function(s){return s.id;});
-  const allSel=ids.every(function(id){return S.selectedIds.has(id);});
+  const ids=S.shotList.scenes.slice(from,to).filter(function(s){return s.type!=='ae';}).map(function(s){return s.id;});
+  const allSel=ids.length>0&&ids.every(function(id){return S.selectedIds.has(id);});
   pushSelHistory();
   if(allSel){ids.forEach(function(id){S.selectedIds.delete(id);});}
   else{ids.forEach(function(id){S.selectedIds.add(id);});}
@@ -1054,10 +1054,18 @@ function updateRangeBtns(){
   if(!qr||!S.shotList)return;
   qr.querySelectorAll('.btn-sm[data-from]').forEach(function(b){
     const f=+b.dataset.from,t=+b.dataset.to;
-    const ids=S.shotList.scenes.slice(f,t).map(function(s){return s.id;});
+    // только выбираемые (не AE) сцены в диапазоне
+    const ids=S.shotList.scenes.slice(f,t).filter(function(s){return s.type!=='ae';}).map(function(s){return s.id;});
     const allSel=ids.length>0&&ids.every(function(id){return S.selectedIds.has(id);});
     if(allSel)b.classList.add('active');else b.classList.remove('active');
   });
+  // "Все AI+Гибрид" кнопка
+  const bAll=document.getElementById('btnAllAI');
+  if(bAll&&S.shotList){
+    const aiIds=S.shotList.scenes.filter(function(s){return s.type!=='ae';}).map(function(s){return s.id;});
+    const allSel=aiIds.length>0&&aiIds.every(function(id){return S.selectedIds.has(id);});
+    if(allSel)bAll.classList.add('active');else bAll.classList.remove('active');
+  }
 }
 function toggleSc(id){pushSelHistory();if(S.selectedIds.has(id))S.selectedIds.delete(id);else S.selectedIds.add(id);updateCards();updateGenBtn();}
 function updateCards(){
