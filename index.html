@@ -59,9 +59,9 @@ canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:n
 .style-opt{position:relative;background:rgba(5,12,30,0.8);border:1px solid rgba(60,120,255,0.2);border-radius:3px;color:rgba(175,215,255,0.8);font-size:9px;letter-spacing:0.5px;padding:5px 9px;cursor:pointer;transition:all 0.15s;font-family:'Courier New',monospace;text-align:left;width:100%}
 .style-opt:hover{border-color:rgba(74,158,255,0.5);color:#e8f5ff;background:rgba(74,158,255,0.07)}
 .style-opt.active{border-color:rgba(74,158,255,0.65);background:rgba(74,158,255,0.12);color:#ddf0ff}
-.style-opt .tip{position:absolute;bottom:calc(100% + 7px);left:0;width:200px;background:#07122a;border:1px solid rgba(74,158,255,0.25);border-radius:3px;padding:7px 10px;font-size:9px;color:rgba(185,220,255,0.85);letter-spacing:0.5px;line-height:1.5;pointer-events:none;opacity:0;transition:opacity 0.15s;z-index:200;white-space:normal}
-.style-opt:hover .tip{opacity:1}
-.style-opt .tip::after{content:'';position:absolute;top:100%;left:14px;border:5px solid transparent;border-top-color:#07122a}
+#globalTip{position:fixed;width:210px;background:#07122a;border:1px solid rgba(74,158,255,0.3);border-radius:4px;padding:8px 11px;font-size:9px;color:rgba(185,220,255,0.9);letter-spacing:0.5px;line-height:1.6;pointer-events:none;opacity:0;transition:opacity 0.15s;z-index:9999;white-space:normal;font-family:'Courier New',monospace}
+#globalTip.show{opacity:1}
+#globalTip::after{content:'';position:absolute;top:100%;left:14px;border:5px solid transparent;border-top-color:#07122a}
 @media(max-width:800px){.style-blocks{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:500px){.style-blocks{grid-template-columns:repeat(2,1fr)}}
 
@@ -524,7 +524,8 @@ function initStyleBlocks(){
       const b=document.createElement('button');
       b.className='style-opt';
       b.type='button';
-      b.innerHTML=opt.label+'<span class="tip">'+opt.tip+'</span>';
+      if(opt.tip)b.dataset.tip=opt.tip;
+      b.textContent=opt.label;
       b.onclick=function(){
         if(b.classList.contains('active')){
           b.classList.remove('active');
@@ -1596,6 +1597,33 @@ initTypes();
 initStyleBlocks();
 loadSavedKeys();
 loadSession();
+
+// ─── GLOBAL TOOLTIP ───────────────────────────────────────────────────────
+(function(){
+  var tip=document.createElement('div');
+  tip.id='globalTip';
+  document.body.appendChild(tip);
+  var hideTimer=null;
+  function showTip(el,text){
+    clearTimeout(hideTimer);
+    var r=el.getBoundingClientRect();
+    tip.innerHTML=text;
+    tip.style.left=r.left+'px';
+    tip.style.top=(r.top-8)+'px';
+    tip.style.transform='translateY(-100%)';
+    tip.classList.add('show');
+  }
+  function hideTip(){
+    hideTimer=setTimeout(function(){tip.classList.remove('show');},80);
+  }
+  document.addEventListener('mouseover',function(e){
+    var btn=e.target.closest('.style-opt[data-tip]');
+    if(btn){showTip(btn,btn.dataset.tip);}
+  });
+  document.addEventListener('mouseout',function(e){
+    if(e.target.closest('.style-opt[data-tip]')){hideTip();}
+  });
+})();
 </script>
 </body>
 </html>
